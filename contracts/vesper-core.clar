@@ -99,27 +99,32 @@
 ;; GETTER FUNCTIONS (Read-Only)
 ;; ============================================================================
 
-;; Get stream details by ID
+;; 1. Get stream details by ID
+;; Returns full stream data including payer, recipient, amounts, timeline
 (define-read-only (get-stream (stream-id uint))
   (map-get? streams { id: stream-id })
 )
 
-;; Get user's balance (escrow deposit)
+;; 2. Get user's escrow balance
+;; Returns total sBTC balance user has deposited to contract escrow
 (define-read-only (get-user-balance (user principal))
   (default-to u0 (get balance (map-get? user-balances { user: user })))
 )
 
-;; Get all stream IDs for a payer
+;; 3. Get all stream IDs for a payer
+;; Returns list of all streams created by this payer (up to 100)
 (define-read-only (get-payer-streams (payer principal))
   (default-to (list) (get stream-ids (map-get? payer-streams { payer: payer })))
 )
 
-;; Get all stream IDs for a recipient
+;; 4. Get all stream IDs for a recipient
+;; Returns list of all streams where this principal receives payments (up to 100)
 (define-read-only (get-recipient-streams (recipient principal))
   (default-to (list) (get stream-ids (map-get? recipient-streams { recipient: recipient })))
 )
 
-;; Calculate available balance for withdrawal from a stream
+;; 5. Calculate available balance for withdrawal from a stream
+;; Returns accrued amount minus already withdrawn for given stream
 (define-read-only (get-available-balance (stream-id uint))
   (let (
     (stream (unwrap! (map-get? streams { id: stream-id }) (err u0)))
@@ -130,24 +135,62 @@
   )
 )
 
-;; Get current stream counter
+;; 6. Get current stream counter
+;; Returns total number of streams created so far
 (define-read-only (get-stream-counter)
   (var-get stream-counter)
 )
 
-;; Get total protocol fees collected
+;; 7. Get total protocol fees collected
+;; Returns cumulative sBTC fees collected from all stream operations
 (define-read-only (get-protocol-fees)
   (var-get protocol-fees-collected)
 )
 
-;; Check if protocol is enabled
+;; 8. Check if protocol is enabled
+;; Returns true if streams can be created/modified, false if disabled by owner
 (define-read-only (is-protocol-enabled)
   (var-get protocol-enabled)
 )
 
-;; Get protocol configuration value
+;; 9. Get protocol configuration value by key
+;; Returns configurable protocol parameter (fee rates, limits, etc)
 (define-read-only (get-protocol-config (key (string-ascii 20)))
   (get value (map-get? protocol-config { key: key }))
+)
+
+;; 10. Get total withdrawn amount from a stream
+;; Returns cumulative sBTC amount already withdrawn by recipient
+(define-read-only (get-withdrawn-amount (stream-id uint))
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) (err u0)))
+  )
+    (ok (get withdrawn stream))
+  )
+)
+
+;; 11. Check if stream is currently active
+;; Returns true if stream status is "active" and not expired
+(define-read-only (is-stream-active (stream-id uint))
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) (err u0)))
+  )
+    (ok (is-eq (get status stream) "active"))
+  )
+)
+
+;; 12. Calculate rate per block for a stream
+;; Returns calculated rate based on total amount and duration
+(define-read-only (get-stream-rate (stream-id uint))
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) (err u0)))
+    (duration (- (get end-block stream) (get start-block stream)))
+  )
+    (if (> duration u0)
+      (ok (/ (get total-amount stream) duration))
+      (err u0)
+    )
+  )
 )
 
 ;; ============================================================================
