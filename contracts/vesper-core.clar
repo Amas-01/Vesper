@@ -197,7 +197,8 @@
 ;; PUBLIC FUNCTIONS (State-Changing)
 ;; ============================================================================
 
-;; Create a new payment stream
+;; 1. Create a new payment stream
+;; Creates escrow-based payment stream from payer to recipient
 (define-public (create-stream
   (recipient principal)
   (total-amount uint)
@@ -205,50 +206,215 @@
   (end-block uint)
   (escrow-model (string-ascii 20))
 )
-  (err u0)
+  (let (
+    (stream-id (var-get stream-counter))
+  )
+    ;; Verify protocol is enabled
+    (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED)
+    ;; Verify recipient is not contract owner (sanity check)
+    (asserts! (not (is-eq recipient CONTRACT-OWNER)) ERR-NOT-AUTHORIZED)
+    ;; Verify amount is positive
+    (asserts! (> total-amount u0) ERR-INVALID-AMOUNT)
+    ;; Verify start block is less than end block
+    (asserts! (< start-block end-block) ERR-INVALID-RATE)
+    ;; Check stream duration is within limits
+    (asserts! (>= (- end-block start-block) MIN-STREAM-DURATION) ERR-INVALID-RATE)
+    (asserts! (<= (- end-block start-block) MAX-STREAM-DURATION) ERR-INVALID-RATE)
+    ;; Calculate rate per block
+    (let (
+      (duration (- end-block start-block))
+      (rate-per-block (/ total-amount duration))
+    )
+      ;; Verify sender has sufficient escrow balance
+      (asserts! (>= (get-user-balance tx-sender) total-amount) ERR-INSUFFICIENT-BALANCE)
+      ;; Deduct from payer's escrow
+      (map-set user-balances
+        { user: tx-sender }
+        { balance: (- (get-user-balance tx-sender) total-amount) }
+      )
+      ;; Create stream record
+      (map-set streams
+        { id: stream-id }
+        {
+          payer: tx-sender,
+          recipient: recipient,
+          total-amount: total-amount,
+          withdrawn: u0,
+          start-block: start-block,
+          end-block: end-block,
+          rate-per-block: rate-per-block,
+          status: "active",
+          escrow-model: escrow-model,
+          created-at: u1
+        }
+      )
+      ;; Update stream counter
+      (var-set stream-counter (+ stream-id u1))
+      (ok stream-id)
+    )
+  )
 )
 
-;; Withdraw available balance from a stream
+;; 2. Withdraw available balance from a stream
+;; Recipient withdraws accrued balance from stream
 (define-public (withdraw-stream (stream-id uint))
-  (err u0)
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) ERR-STREAM-NOT-FOUND))
+  )
+    ;; Verify protocol is enabled
+    (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED)
+    ;; Verify caller is the recipient
+    (asserts! (is-eq tx-sender (get recipient stream)) ERR-NOT-AUTHORIZED)
+    ;; Verify stream is active
+    (asserts! (is-eq (get status stream) "active") ERR-STREAM-EXPIRED)
+    ;; Verify some balance is available
+    (asserts! (> (get total-amount stream) (get withdrawn stream)) ERR-NO-WITHDRAW-AVAILABLE)
+    ;; Calculate available amount
+    (let (
+      (available (- (get total-amount stream) (get withdrawn stream)))
+      (fee (/ (* available PROTOCOL-FEE-BPS) BASIS-POINTS))
+      (payout (- available fee))
+    )
+      ;; Update stream with new withdrawn amount
+      (map-set streams
+        { id: stream-id }
+        (merge stream { withdrawn: (get total-amount stream) })
+      )
+      ;; Update protocol fees
+      (var-set protocol-fees-collected (+ (var-get protocol-fees-collected) fee))
+      ;; Add payout to recipient's balance (in real implementation, transfer sBTC)
+      (map-set user-balances
+        { user: tx-sender }
+        { balance: (+ (get-user-balance tx-sender) payout) }
+      )
+      (ok payout)
+    )
+  )
 )
 
-;; Cancel an active stream
+;; 3. Cancel an active stream
+;; Payer cancels stream and reclaims remaining balance
 (define-public (cancel-stream (stream-id uint) (reason (string-ascii 100)))
-  (err u0)
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) ERR-STREAM-NOT-FOUND))
+  )
+    ;; Verify protocol is enabled
+    (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED)
+    ;; Verify caller is the payer
+    (asserts! (is-eq tx-sender (get payer stream)) ERR-NOT-AUTHORIZED)
+    ;; Verify stream is active
+    (asserts! (is-eq (get status stream) "active") ERR-STREAM-ACTIVE)
+    ;; Calculate remaining balance
+    (let (
+      (remaining (- (get total-amount stream) (get withdrawn stream)))
+    )
+      ;; Update stream status to cancelled
+      (map-set streams
+        { id: stream-id }
+        (merge stream { status: "cancelled" })
+      )
+      ;; Return remaining balance to payer's escrow
+      (map-set user-balances
+        { user: tx-sender }
+        { balance: (+ (get-user-balance tx-sender) remaining) }
+      )
+      (ok remaining)
+    )
+  )
 )
 
-;; Deposit sBTC to user's escrow balance
+;; 4. Deposit sBTC to user's escrow balance
+;; User deposits sBTC for use in creating streams
 (define-public (deposit-escrow (amount uint))
-  (err u0)
+  (begin
+    ;; Verify amount is positive
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    ;; Update user's balance (in real implementation, transfer sBTC from user)
+    (map-set user-balances
+      { user: tx-sender }
+      { balance: (+ (get-user-balance tx-sender) amount) }
+    )
+    (ok amount)
+  )
 )
 
-;; Withdraw from escrow balance
+;; 5. Withdraw from escrow balance
+;; User withdraws deposited sBTC from escrow
 (define-public (withdraw-escrow (amount uint))
-  (err u0)
+  (let (
+    (balance (get-user-balance tx-sender))
+  )
+    ;; Verify amount is positive
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    ;; Verify user has sufficient balance
+    (asserts! (>= balance amount) ERR-INSUFFICIENT-BALANCE)
+    ;; Update user's balance
+    (map-set user-balances
+      { user: tx-sender }
+      { balance: (- balance amount) }
+    )
+    (ok amount)
+  )
 )
 
-;; Pause stream operation
+;; 6. Pause stream operation
+;; Payer pauses active stream temporarily
 (define-public (pause-stream (stream-id uint))
-  (err u0)
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) ERR-STREAM-NOT-FOUND))
+  )
+    ;; Verify caller is the payer
+    (asserts! (is-eq tx-sender (get payer stream)) ERR-NOT-AUTHORIZED)
+    ;; Verify stream is active
+    (asserts! (is-eq (get status stream) "active") ERR-STREAM-EXPIRED)
+    ;; Update stream status to paused
+    (map-set streams
+      { id: stream-id }
+      (merge stream { status: "paused" })
+    )
+    (ok stream-id)
+  )
 )
 
-;; Resume paused stream
+;; 7. Resume paused stream
+;; Payer resumes previously paused stream
 (define-public (resume-stream (stream-id uint))
-  (err u0)
+  (let (
+    (stream (unwrap! (map-get? streams { id: stream-id }) ERR-STREAM-NOT-FOUND))
+  )
+    ;; Verify caller is the payer
+    (asserts! (is-eq tx-sender (get payer stream)) ERR-NOT-AUTHORIZED)
+    ;; Verify stream is paused
+    (asserts! (is-eq (get status stream) "paused") ERR-STREAM-ACTIVE)
+    ;; Update stream status back to active
+    (map-set streams
+      { id: stream-id }
+      (merge stream { status: "active" })
+    )
+    (ok stream-id)
+  )
 )
 
-;; Update protocol configuration (admin only)
+;; 8. Update protocol configuration (admin only)
+;; Owner updates protocol parameters like fee rates
 (define-public (set-protocol-config (key (string-ascii 20)) (value uint))
-  (err u0)
+  (begin
+    ;; Verify caller is the owner
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    ;; Update config
+    (map-set protocol-config { key: key } { value: value })
+    (ok value)
+  )
 )
 
-;; Enable/disable protocol (owner only)
+;; 9. Enable/disable protocol (owner only)
+;; Owner enables or disables stream creation and operations
 (define-public (set-protocol-enabled (enabled bool))
-  (err u0)
-)
-
-;; Claim protocol fees (owner only)
-(define-public (claim-protocol-fees)
-  (err u0)
+  (begin
+    ;; Verify caller is the owner
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    ;; Update protocol enabled flag
+    (var-set protocol-enabled enabled)
+    (ok enabled)
+  )
 )
