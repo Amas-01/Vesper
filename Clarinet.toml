@@ -5,6 +5,10 @@ authors = ["Vesper Protocol Team"]
 telemetry = false
 cache_dir = "./.cache"
 
+[contracts.vesper-core]
+path = "contracts/vesper-core.clar"
+epoch = "latest"
+
 # [contracts.counter]
 # path = "contracts/counter.clar"
 # epoch = "latest"
