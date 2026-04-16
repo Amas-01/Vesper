@@ -1,8 +1,8 @@
-# Vesper Protocol Security & Audit
+# 🔐 Vesper Protocol Security & Audit
 
 Comprehensive security documentation, audit process, known limitations, and responsible disclosure guidelines.
 
-## Security Philosophy
+## 🏰 Security Philosophy
 
 **"Defense in Depth"**: Multiple layers of protection at contract, infrastructure, and operational levels.
 
@@ -15,9 +15,9 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Contracted Security Audit
+## 🔍 Contracted Security Audit
 
-### Audit Scope
+### 📋 Audit Scope
 
 **Phase 4 (Mainnet Preparation) includes third-party audit of:**
 - All three main contracts (core, dao, registry)
@@ -28,7 +28,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 - Escrow model implementations
 - DAO voting mechanics
 
-### Audit Process
+### 🔄 Audit Process
 
 1. **RFP & Selection** (Month 3)
    - Issue RFP to reputable audit firms
@@ -55,7 +55,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
    - All findings and resolutions listed
    - Sign-off obtained
 
-### Audit Report Publication
+### 📢 Audit Report Publication
 
 - [ ] Full audit report published on GitHub
 - [ ] Executive summary in README
@@ -64,7 +64,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Known Limitations (MVP)
+## ⚠️ Known Limitations (MVP)
 
 ### Phase 1 (Month 1)
 
@@ -111,7 +111,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Known Vulnerabilities & Mitigations
+## 🚨 Known Vulnerabilities & Mitigations
 
 ### 1. Escrow Timing Risk
 
@@ -184,7 +184,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Security Best Practices
+## 📋 Security Best Practices
 
 ### For Smart Contracts
 
@@ -213,7 +213,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Incident Response Plan
+## 🚨 Incident Response Plan
 
 ### Severity Levels
 
@@ -252,7 +252,7 @@ Comprehensive security documentation, audit process, known limitations, and resp
 
 ---
 
-## Bug Bounty Program
+## 💰 Bug Bounty Program
 
 ### Scope
 
@@ -298,7 +298,7 @@ The following are in scope for bug bounties:
 
 ---
 
-## Security Monitoring
+## 🔍 Security Monitoring
 
 ### Continuous Monitoring
 
@@ -317,7 +317,7 @@ The following are in scope for bug bounties:
 
 ---
 
-## Compliance & Regulatory
+## ⚖️ Compliance & Regulatory
 
 ### Stacks Ecosystem Compliance
 
@@ -335,7 +335,7 @@ The following are in scope for bug bounties:
 
 ---
 
-## Security Contacts
+## 📧 Security Contacts
 
 - **Security Issues**: security@vesper.sh
 - **General Questions**: team@vesper.sh
@@ -344,7 +344,7 @@ The following are in scope for bug bounties:
 
 ---
 
-## Additional Resources
+## 📚 Additional Resources
 
 - [Clarity Security Best Practices](https://docs.stacks.co/smart-contracts/clarity/clarity-best-practices)
 - [Stacks Audit Guidelines](https://docs.stacks.co/smart-contracts/audit-guidelines)
@@ -353,7 +353,7 @@ The following are in scope for bug bounties:
 
 ---
 
-## Security Review Checklist
+## ✅ Security Review Checklist
 
 Before each release:
 

@@ -1,11 +1,11 @@
-# Vesper Protocol Roadmap
+# 🗺️ Vesper Protocol Roadmap
 
-## Phase 0: Bootstrap (Pre-Month 1)
-- [x] Repository initialization
-- [x] Documentation scaffold
+## 🚀 Phase 0: Bootstrap (Pre-Month 1)
+- [✓] Repository initialization
+- [✓] Documentation scaffold
 - [ ] GitHub setup and CI/CD pipeline
 
-## Month 1: Core Streaming Contract & Basic Frontend
+## 📅 Month 1: Core Streaming Contract & Basic Frontend
 
 ### Smart Contracts
 - Implement `vesper-core` contract with:
@@ -25,9 +25,9 @@
 - Testnet deployment
 - Manual testing guide
 
-## Month 2: DAO Governance, Cancellation & Withdrawal
+## 📅 Month 2: DAO Governance, Cancellation & Withdrawal
 
-### Smart Contracts
+### 📝 Smart Contracts
 - Implement `vesper-dao` contract with:
   - Governance token (VESPER)
   - Proposal creation and voting
@@ -44,9 +44,9 @@
 - Parameter configuration UI
 - Analytics for stream health
 
-## Month 3: Multi-Stream, Batch Payroll & Analytics
+## 📅 Month 3: Multi-Stream, Batch Payroll & Analytics
 
-### Smart Contracts
+### 📝 Smart Contracts
 - `vesper-registry` contract for stream enumeration
 - Batch stream creation
 - Multi-recipient payroll groups
@@ -64,9 +64,9 @@
 - CLI tools for bulk operations
 - Off-chain indexer for analytics
 
-## Month 4: Mainnet Audit, Deployment & Advanced Features
+## 📅 Month 4: Mainnet Audit, Deployment & Advanced Features
 
-### Security
+### 🔐 Security
 - Third-party smart contract audit
 - Penetration testing for frontend
 - Security audit report publication
@@ -84,4 +84,4 @@
 
 ---
 
-**Status**: Phase 0 in progress
+**Status**: 🔋 Phase 0 in progress

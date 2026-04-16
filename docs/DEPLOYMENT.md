@@ -1,8 +1,8 @@
-# Vesper Protocol Deployment Guide
+# 🚀 Vesper Protocol Deployment Guide
 
 Deployment procedures for testnet and mainnet environments with detailed checklists and monitoring setup.
 
-## Environment Setup
+## ⚙️ Environment Setup
 
 ### Testnet Configuration
 
@@ -50,7 +50,7 @@ DEPLOY_ACCOUNT_MNEMONIC=<your-mainnet-mnemonic>
 
 ---
 
-## Testnet Deployment
+## 🦦 Testnet Deployment
 
 ### Phase 1: Contract Deployment
 
@@ -229,7 +229,7 @@ npm run dev
 
 ---
 
-## Mainnet Deployment
+## 📄 Mainnet Deployment
 
 ### Pre-Mainnet Checklist
 
@@ -339,7 +339,7 @@ echo "✓ Governance proposals: $PROPOSAL_COUNT"
 
 ---
 
-## Contract Addresses
+## 🏠 Contract Addresses
 
 ### Testnet (Phase 1+)
 
@@ -359,7 +359,7 @@ echo "✓ Governance proposals: $PROPOSAL_COUNT"
 
 ---
 
-## Environment Variables Required
+## 📄 Environment Variables Required
 
 ### Backend / Contracts
 ```bash
@@ -388,7 +388,7 @@ VERCEL_PROJECT_ID=
 
 ---
 
-## Rollback Procedures
+## ➡️ Rollback Procedures
 
 ### If Contract Issue Detected
 
@@ -415,7 +415,7 @@ clarinet deploy types vesper-core-v2 --network mainnet
 
 ---
 
-## Cost Estimation
+## 💰 Cost Estimation
 
 ### Mainnet Gas Costs (Approximate)
 
@@ -429,7 +429,7 @@ clarinet deploy types vesper-core-v2 --network mainnet
 
 ---
 
-## Post-Deployment
+## 🌟 Post-Deployment
 
 ### Week 1
 - Monitor contract events

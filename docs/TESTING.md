@@ -1,8 +1,8 @@
-# Vesper Protocol Testing Strategy
+# 🧪 Vesper Protocol Testing Strategy
 
 Comprehensive testing approach covering contracts, frontend, and integration scenarios.
 
-## Testing Philosophy
+## 🧮 Testing Philosophy
 
 - **Unit Tests**: Test individual functions in isolation
 - **Integration Tests**: Test interactions between components
@@ -11,7 +11,7 @@ Comprehensive testing approach covering contracts, frontend, and integration sce
 
 ---
 
-## Smart Contract Testing (Clarinet)
+## 📝 Smart Contract Testing (Clarinet)
 
 ### Unit Test Structure
 
@@ -112,7 +112,7 @@ clarinet test --suit "describe(\"create-stream\")"
 
 ---
 
-## Frontend Testing (Vitest)
+## ⚛️ Frontend Testing (Vitest)
 
 ### Test Structure
 
@@ -208,7 +208,7 @@ describe('StreamCard', () => {
 
 ---
 
-## Integration Testing
+## 📄 Integration Testing
 
 ### Testnet Scenarios
 
@@ -266,7 +266,7 @@ export STACKS_ENV=testnet
 
 ---
 
-## Continuous Integration (GitHub Actions)
+## 🤖 Continuous Integration (GitHub Actions)
 
 ### CI Workflow (`ci.yml`)
 
@@ -322,7 +322,7 @@ jobs:
 
 ---
 
-## Manual Testing Checklist
+## ✅ Manual Testing Checklist
 
 - [ ] Stream creation with valid inputs
 - [ ] Stream creation with invalid inputs (rejects appropriately)
@@ -340,7 +340,7 @@ jobs:
 
 ---
 
-## Performance & Security Tests
+## 🚀 Performance & Security Tests
 
 ### Load Testing
 - Simulate 100+ concurrent streams

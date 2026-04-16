@@ -1,8 +1,8 @@
-# Vesper Protocol Frontend Components
+# ⚛️ Vesper Protocol Frontend Components
 
 Comprehensive list of React components with props, purposes, and integration points.
 
-## Component Hierarchy
+## 🎩 Component Hierarchy
 
 ```
 <App>
@@ -35,9 +35,9 @@ Comprehensive list of React components with props, purposes, and integration poi
     └── <ExportData>
 ```
 
-## Component Reference
+## 📄 Component Reference
 
-### Layout Components
+### 📖 Layout Components
 
 #### `App.tsx`
 **Purpose**: Root component, routing and global state provider
@@ -87,7 +87,7 @@ interface NavigationProps {
 
 ---
 
-### Dashboard Components
+### 📊 Dashboard Components
 
 #### `StreamDashboard.tsx`
 **Purpose**: Main user dashboard showing all streams, balances, and quick actions
@@ -201,7 +201,7 @@ interface SummaryMetricsProps {
 
 ---
 
-### Stream Creation Components
+### ✍️ Stream Creation Components
 
 #### `StreamCreator.tsx`
 **Purpose**: Multi-step form for creating new payment stream
@@ -312,7 +312,7 @@ interface StreamPreviewProps {
 
 ---
 
-### DAO Components
+### 🗳️ DAO Components
 
 #### `ProposalList.tsx`
 **Purpose**: Display all open and past governance proposals
@@ -443,7 +443,7 @@ interface TokenBalanceProps {
 
 ---
 
-### Analytics Components
+### 📊 Analytics Components
 
 #### `StreamMetrics.tsx`
 **Purpose**: Dashboard of streaming protocol statistics
@@ -501,7 +501,7 @@ interface ExportDataProps {
 
 ---
 
-### Utility Components
+### 🔧 Utility Components
 
 #### `WalletConnect.tsx`
 **Purpose**: Authentication and wallet connection flow
