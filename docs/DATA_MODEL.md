@@ -1,6 +1,6 @@
-# Vesper Protocol Data Model
+# 🗄️ Vesper Protocol Data Model
 
-## Core Data Structures
+## 📚 Core Data Structures
 
 ### Stream (in vesper-core)
 
@@ -70,7 +70,7 @@ Represents a governance proposal.
 - `min-proposal-deposit` - Min VESPER to create proposal
 
 
-## Clarity Map Structures
+## 🌐 Clarity Map Structures
 
 ### vesper-core.clar
 
@@ -128,7 +128,7 @@ Represents a governance proposal.
 (define-var protocol-fee uint u250)  ;; 2.5% in basis points
 ```
 
-## Access Patterns
+## 🔍 Access Patterns
 
 | Operation | Primary Index | Complexity |
 |-----------|---------------|------------|
@@ -139,7 +139,7 @@ Represents a governance proposal.
 | Get user's vote on proposal | `proposal-votes` | O(1) |
 | Calculate withdrawal amount | Stream data + block height | O(1) |
 
-## Type Definitions
+## 🊯 Type Definitions
 
 ### Custom Types
 
@@ -157,7 +157,7 @@ Represents a governance proposal.
 ;; Values: "parameter" | "upgrade" | "treasury" | "emergency"
 ```
 
-## Time-based Calculations
+## ⏰ Time-based Calculations
 
 ### Block-based Time
 - 1 Stacks block ≈ 10 minutes

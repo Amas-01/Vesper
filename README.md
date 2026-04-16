@@ -1,26 +1,26 @@
-# Vesper Protocol
+# 🚀 Vesper Protocol
 
 **Real-time per-block sBTC payroll and payment streaming on Bitcoin via Stacks**
 
-[![Build Status](https://github.com/vesper-protocol/vesper-protocol/workflows/CI/badge.svg)](https://github.com/vesper-protocol/vesper-protocol/actions)
+[![Build Status](https://github.com/Amas-01/Vesper/workflows/CI/badge.svg)](https://github.com/Amas-01/Vesper/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Testnet Live](https://img.shields.io/badge/Testnet-Live-brightgreen.svg)](DEPLOYMENT.md)
+[![Testnet Live](https://img.shields.io/badge/Testnet-Live-brightgreen.svg)](docs/DEPLOYMENT.md)
 
-## Overview
+## 📋 Overview
 
 Vesper is a decentralized payment streaming protocol built on Stacks that enables real-time, per-block sBTC payroll distributions. Instead of monthly or weekly payouts, Vesper allows employers and service providers to stream payments continuously, with recipients able to withdraw their earnings on-chain as they accrue.
 
-Key features:
-- **Per-block streaming**: Payments settle every Stacks block (~10 minutes)
-- **sBTC integration**: Secure Bitcoin settlement via Stacks sBTC
-- **DAO governance**: Token holders vote on protocol parameters and upgrades
-- **Cancellable streams**: Payers can cancel active streams with customizable escrow models
-- **Batch payroll**: Pay multiple recipients in a single transaction
-- **Analytics dashboard**: Real-time tracking of payment streams and DAO governance
+### ✨ Key Features:
+- ⏱️ **Per-block streaming**: Payments settle every Stacks block (~10 minutes)
+- ₿ **sBTC integration**: Secure Bitcoin settlement via Stacks sBTC
+- 🗳️ **DAO governance**: Token holders vote on protocol parameters and upgrades
+- ❌ **Cancellable streams**: Payers can cancel active streams with customizable escrow models
+- 📦 **Batch payroll**: Pay multiple recipients in a single transaction
+- 📊 **Analytics dashboard**: Real-time tracking of payment streams and DAO governance
 
-## Quick Start
+## ⚡ Quick Start
 
-### Prerequisites
+### 📋 Prerequisites
 - Node.js 18+ and npm
 - Stacks CLI with Clarinet
 - A Stacks wallet (Hiro Wallet or similar)
@@ -49,16 +49,16 @@ npm run build
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed testnet and mainnet deployment instructions.
 
-## Documentation
+## 📚 Documentation
 
-- [Roadmap](ROADMAP.md) - Development phases and timeline
-- [Architecture](docs/ARCHITECTURE.md) - System design and component overview
-- [Data Model](docs/DATA_MODEL.md) - Clarity data structures and storage
-- [Smart Contracts](docs/CONTRACTS.md) - Contract reference and function signatures
-- [Frontend Components](docs/FRONTEND_COMPONENTS.md) - React component library
-- [Testing Strategy](docs/TESTING.md) - Test coverage and execution
-- [Deployment Guide](docs/DEPLOYMENT.md) - Testnet and mainnet deployment
-- [Security](docs/SECURITY.md) - Audit process and known limitations
+- 🗺️ [Roadmap](ROADMAP.md) - Development phases and timeline
+- 🏗️ [Architecture](docs/ARCHITECTURE.md) - System design and component overview
+- 🗄️ [Data Model](docs/DATA_MODEL.md) - Clarity data structures and storage
+- 📝 [Smart Contracts](docs/CONTRACTS.md) - Contract reference and function signatures
+- ⚛️ [Frontend Components](docs/FRONTEND_COMPONENTS.md) - React component library
+- 🧪 [Testing Strategy](docs/TESTING.md) - Test coverage and execution
+- 🚀 [Deployment Guide](docs/DEPLOYMENT.md) - Testnet and mainnet deployment
+- 🔐 [Security](docs/SECURITY.md) - Audit process and known limitations
 
 ## Project Structure
 

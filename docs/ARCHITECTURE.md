@@ -1,6 +1,6 @@
-# Vesper Protocol Architecture
+# 🏗️ Vesper Protocol Architecture
 
-## System Overview
+## 👀 System Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -36,9 +36,9 @@
         └─────────────────────────────┘
 ```
 
-## Component Layers
+## 📊 Component Layers
 
-### 1. Smart Contract Layer
+### 1. 📝 Smart Contract Layer
 
 #### vesper-core Contract
 Handles all core streaming logic:
@@ -60,7 +60,7 @@ Stream enumeration and batching:
 - **User Streams**: List all streams for a given address (payer/recipient)
 - **Batch Operations**: Submit multiple streams atomically
 
-### 2. Frontend Layer
+### 2. ⚛️ Frontend Layer
 
 #### React Components
 - **StreamDashboard**: Display active/completed streams with balances
@@ -78,7 +78,7 @@ Stream enumeration and batching:
 - Tailwind CSS for utility-first design
 - Responsive mobile and desktop layouts
 
-### 3. Wallet Integration
+### 3. 💳 Wallet Integration
 
 #### Hiro Wallet Integration
 - Connect with `@stacks/connect`
@@ -92,7 +92,7 @@ Stream enumeration and batching:
 4. Signed transaction submitted to Stacks network
 5. Network confirms after 1 block
 
-### 4. sBTC Flow
+### 4. ₿ sBTC Flow
 
 **Deposit (Payer)**
 ```
@@ -104,7 +104,7 @@ Payer's Bitcoin → Stacks sBTC Bridge → sBTC on Stacks → vesper-core Contra
 vesper-core Escrow → Recipient's STX Address → Withdraw via Bridge (optional)
 ```
 
-### 5. DAO Governance Model
+### 5. 🗳️ DAO Governance Model
 
 **Governance Process:**
 1. VESPER token holders propose changes
@@ -118,7 +118,7 @@ vesper-core Escrow → Recipient's STX Address → Withdraw via Bridge (optional
 - Min/max stream duration
 - Acceptable escrow models
 
-### 6. Block-Based Streaming Logic
+### 6. ⏱️ Block-Based Streaming Logic
 
 **Key Concept**: Payments settle per Stacks block (~10 minutes)
 
@@ -138,7 +138,7 @@ Block 10: Recipient can withdraw 10 sBTC
 Block 100: Stream ends, final settlement
 ```
 
-## Data Flow
+## 📖 Data Flow
 
 ### Create Stream
 ```
@@ -155,7 +155,7 @@ Check Stream Active → Calculate Accrued → Build Withdrawal TX → Sign → S
 View Proposals → Select Option → Build Vote TX → Sign → Submit → Update Results
 ```
 
-## Deployment Architecture
+## 🚀 Deployment Architecture
 
 ### Testnet
 - Contracts deployed to Stacks testnet

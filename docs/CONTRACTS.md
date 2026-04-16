@@ -1,8 +1,8 @@
-# Vesper Protocol Smart Contracts
+# 📝 Vesper Protocol Smart Contracts
 
 Complete reference of all planned Clarity contracts, including function signatures and descriptions.
 
-## Contract Manifest
+## 🗽️ Contract Manifest
 
 | Contract | Scope | Purpose |
 |----------|-------|---------|
@@ -12,11 +12,11 @@ Complete reference of all planned Clarity contracts, including function signatur
 
 ---
 
-## 1. vesper-core.clar
+## 1. 🎁 vesper-core.clar
 
 Core streaming contract managing all stream creation, withdrawal, and state transitions.
 
-### Read-Only Functions
+### 🔍 Read-Only Functions
 
 #### get-stream
 - **Parameters**: `stream-id: uint`
@@ -53,7 +53,7 @@ Core streaming contract managing all stream creation, withdrawal, and state tran
 - **Returns**: `(response uint {code})`
 - **Description**: Return total number of streams created
 
-### Public Functions
+### ✨ Public Functions
 
 #### create-stream
 - **Parameters**:
@@ -117,11 +117,11 @@ Core streaming contract managing all stream creation, withdrawal, and state tran
 
 ---
 
-## 2. vesper-dao.clar
+## 2. 🗳️ vesper-dao.clar
 
 DAO governance contract for VESPER token and protocol parameter management.
 
-### Read-Only Functions
+### 🔍 Read-Only Functions
 
 #### get-balance
 - **Parameters**: `account: principal`
@@ -158,7 +158,7 @@ DAO governance contract for VESPER token and protocol parameter management.
 - **Returns**: `(response bool {code})`
 - **Description**: Check if proposal voting window is still open
 
-### Public Functions
+### ✨ Public Functions
 
 #### transfer
 - **Parameters**:
@@ -219,11 +219,11 @@ DAO governance contract for VESPER token and protocol parameter management.
 
 ---
 
-## 3. vesper-registry.clar
+## 3. 📳 vesper-registry.clar
 
 Stream registry and batch operation contract for efficient stream management and enumeration.
 
-### Read-Only Functions
+### 🔍 Read-Only Functions
 
 #### get-stream-count-for-user
 - **Parameters**: `user: principal, role: (buff 32)`
@@ -248,7 +248,7 @@ Stream registry and batch operation contract for efficient stream management and
 - **Returns**: `(response (list 100 uint) {code})`
 - **Description**: Search for streams matching optional filter criteria
 
-### Public Functions
+### ✨ Public Functions
 
 #### batch-create-streams
 - **Parameters**: `stream-specs: (list 10 {recipient: principal, amount: uint, duration: uint})`
@@ -281,7 +281,7 @@ Stream registry and batch operation contract for efficient stream management and
 
 ---
 
-## Event Emissions
+## 📢 Event Emissions
 
 All contracts emit events for indexing and frontend updates. Examples:
 
