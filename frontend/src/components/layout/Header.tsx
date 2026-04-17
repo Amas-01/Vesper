@@ -3,25 +3,33 @@ import ConnectWallet from '../wallet/ConnectWallet'
 
 export default function Header() {
   return (
-    <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="text-2xl font-bold text-vesper-600">Vesper</div>
-          <span className="text-sm text-slate-500">Payment Streaming</span>
+    <header className="sticky top-0 z-40 border-b border-dark-border bg-dark-surface/95 backdrop-blur-md shadow-lg shadow-black/20">
+      <div className="container-dark flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3 py-4 group">
+          <div className="text-2xl font-bold text-gradient">Vesper</div>
+          <span className="text-sm text-dark-text-secondary group-hover:text-vesper-400 transition-colors">
+            Payment Streaming
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-6">
-          <Link to="/dashboard" className="text-slate-600 hover:text-vesper-600 font-medium transition">
+        <nav className="flex items-center gap-8">
+          <Link
+            to="/dashboard"
+            className="text-dark-text-secondary hover:text-vesper-400 font-medium transition-colors"
+          >
             Dashboard
           </Link>
-          <Link to="/create" className="text-slate-600 hover:text-vesper-600 font-medium transition">
+          <Link
+            to="/create"
+            className="text-dark-text-secondary hover:text-vesper-400 font-medium transition-colors"
+          >
             Create Stream
           </Link>
           <a
             href="https://github.com/Amas-01/Vesper"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-600 hover:text-vesper-600 font-medium transition"
+            className="text-dark-text-secondary hover:text-vesper-400 font-medium transition-colors"
           >
             Docs
           </a>

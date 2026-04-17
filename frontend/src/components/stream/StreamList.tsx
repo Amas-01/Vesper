@@ -2,8 +2,8 @@ export default function StreamList({ streams }: { streams: any[] }) {
   if (streams.length === 0) {
     return (
       <div className="vesper-card p-12 text-center">
-        <p className="text-slate-600 text-lg">No streams yet</p>
-        <p className="text-slate-500 text-sm mt-2">Create your first stream to get started</p>
+        <p className="text-dark-text text-lg font-medium">No streams yet</p>
+        <p className="text-dark-text-secondary text-sm mt-2">Create your first stream to get started</p>
       </div>
     )
   }

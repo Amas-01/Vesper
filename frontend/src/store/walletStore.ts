@@ -7,7 +7,7 @@ interface WalletStore {
   address: string | null
   isConnected: boolean
   network: string
-  setAddress: (address: string) => void
+  setAddress: (address: string | null) => void
   setConnected: (connected: boolean) => void
   setNetwork: (network: string) => void
   disconnect: () => void
