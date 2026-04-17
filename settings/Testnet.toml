@@ -4,4 +4,4 @@ stacks_node_rpc_address = "https://api.testnet.hiro.so"
 deployment_fee_rate = 10
 
 [accounts.deployer]
-mnemonic = "twice kind fence lamp tipple tired timer sorry tension peace thunder bench"
+mnemonic = ""
