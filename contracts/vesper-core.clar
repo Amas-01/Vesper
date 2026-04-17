@@ -56,10 +56,10 @@
   }
 )
 
-;; Stream index - track all stream IDs created
+;; Stream index - track all stream IDs created (enumeration helper for off-chain queries)
 (define-map stream-index
   { index: uint }
-  { id: uint }
+  { stream-id: uint }
 )
 
 ;; Balance tracking for each user (escrow deposits)
@@ -247,6 +247,11 @@
           escrow-model: escrow-model,
           created-at: u1
         }
+      )
+      ;; Add stream ID to index for enumeration
+      (map-set stream-index
+        { index: stream-id }
+        { stream-id: stream-id }
       )
       ;; Update stream counter
       (var-set stream-counter (+ stream-id u1))
