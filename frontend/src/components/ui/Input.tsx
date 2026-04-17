@@ -6,14 +6,16 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export default function Input({ label, error, ...props }: InputProps) {
   return (
     <div>
-      {label && <label className="block text-sm font-medium text-slate-700 mb-2">{label}</label>}
+      {label && (
+        <label className="block text-sm font-medium text-dark-text mb-2">
+          {label}
+        </label>
+      )}
       <input
         {...props}
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-vesper-500 transition ${
-          error ? 'border-red-500' : 'border-slate-300'
-        }`}
+        className={`vesper-input ${error ? 'vesper-input-error' : ''}`}
       />
-      {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+      {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
     </div>
   )
 }
