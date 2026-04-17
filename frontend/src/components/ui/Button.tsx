@@ -3,19 +3,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger'
 }
 
-export default function Button({ children, variant = 'primary', className = '', ...props }: ButtonProps) {
-  const baseClasses = 'vesper-btn transition font-semibold'
+export default function Button({
+  children,
+  variant = 'primary',
+  className = '',
+  ...props
+}: ButtonProps) {
   const variantClasses = {
     primary: 'vesper-btn-primary',
-    secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
+    secondary: 'vesper-btn-secondary',
+    danger: 'vesper-btn-danger',
   }
 
   return (
-    <button
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-      {...props}
-    >
+    <button className={`${variantClasses[variant]} ${className}`} {...props}>
       {children}
     </button>
   )

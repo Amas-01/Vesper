@@ -3,21 +3,180 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark Mode - Global Styles */
+  :root {
+    --color-bg-primary: #0f0f1f;
+    --color-bg-secondary: #1a1a2e;
+    --color-bg-tertiary: #16213e;
+    --color-text-primary: #e4e6eb;
+    --color-text-secondary: #8892a1;
+    --color-border: #2d2d44;
+    --color-vesper: #8b4dd1;
+  }
+
+  html {
+    /* Force dark class for Tailwind dark mode */
+    @supports (--dark: true) {
+      background: linear-gradient(135deg, #0a0a15 0%, #0f0f1f 50%, #0a0a15 100%);
+      color: #e4e6eb;
+    }
+  }
+
+  html.dark {
+    background: linear-gradient(to bottom right, rgb(5, 5, 15), rgb(15, 15, 31), rgb(5, 5, 15));
+    color: #e4e6eb;
+  }
+
   body {
-    @apply bg-gradient-to-br from-slate-50 to-slate-100;
+    @apply bg-gradient-to-br from-slate-dark-950 via-slate-dark-900 to-slate-dark-950
+           text-dark-text font-sans;
+    background-attachment: fixed;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-dark-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-vesper-700 rounded-full hover:bg-vesper-600;
   }
 }
 
 @layer components {
+  /* Button Variants */
   .vesper-btn {
-    @apply px-4 py-2 rounded-lg font-semibold transition-colors duration-200;
+    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .vesper-btn-primary {
-    @apply vesper-btn bg-vesper-600 text-white hover:bg-vesper-700;
+    @apply vesper-btn bg-vesper-500 text-white hover:bg-vesper-600
+           hover:shadow-lg hover:shadow-vesper-500/20 active:bg-vesper-700;
   }
 
+  .vesper-btn-secondary {
+    @apply vesper-btn bg-slate-dark-700 text-dark-text border border-dark-border
+           hover:bg-slate-dark-600 active:bg-slate-dark-800;
+  }
+
+  .vesper-btn-danger {
+    @apply vesper-btn bg-red-900 text-red-100 hover:bg-red-800
+           active:bg-red-950;
+  }
+
+  /* Card Variants */
   .vesper-card {
-    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-2xl border border-dark-border bg-dark-surface
+           shadow-lg shadow-black/20 backdrop-blur-sm;
+  }
+
+  .vesper-card-elevated {
+    @apply vesper-card shadow-xl shadow-black/30;
+  }
+
+  .vesper-card-hover {
+    @apply vesper-card hover:border-vesper-500/40 hover:shadow-lg
+           hover:shadow-vesper-500/10 transition-all duration-300 cursor-pointer;
+  }
+
+  /* Input Variants */
+  .vesper-input {
+    @apply w-full px-4 py-2 rounded-lg bg-dark-surface border border-dark-border
+           text-dark-text
+           focus:outline-none focus:ring-2 focus:ring-vesper-500
+           focus:border-vesper-500 transition-all duration-200;
+    color: #e4e6eb;
+  }
+
+  .vesper-input::placeholder {
+    color: #8892a1;
+  }
+
+  .vesper-input-error {
+    @apply vesper-input border-red-500 focus:ring-red-500 focus:border-red-500;
+  }
+
+  /* Badge Variants */
+  .vesper-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .vesper-badge-primary {
+    @apply vesper-badge bg-vesper-500/20 text-vesper-300;
+  }
+
+  .vesper-badge-success {
+    @apply vesper-badge bg-green-500/20 text-green-300;
+  }
+
+  .vesper-badge-warning {
+    @apply vesper-badge bg-yellow-500/20 text-yellow-300;
+  }
+
+  .vesper-badge-danger {
+    @apply vesper-badge bg-red-500/20 text-red-300;
+  }
+
+  .vesper-badge-neutral {
+    @apply vesper-badge bg-slate-dark-700 text-dark-text-secondary;
+  }
+
+  /* Progress Bar */
+  .vesper-progress {
+    @apply w-full h-2 rounded-full bg-slate-dark-800 overflow-hidden;
+  }
+
+  .vesper-progress-bar {
+    @apply h-full rounded-full bg-gradient-to-r from-vesper-500 to-vesper-400
+           transition-all duration-300;
+  }
+
+  /* Divider */
+  .vesper-divider {
+    @apply border-t border-dark-border;
+  }
+
+  /* Glass Effect */
+  .vesper-glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl;
+  }
+}
+
+@layer utilities {
+  /* Layout Utilities */
+  .container-dark {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Text Utilities */
+  .text-gradient {
+    @apply bg-gradient-to-r from-vesper-400 to-vesper-600 bg-clip-text text-transparent;
+  }
+
+  /* Animation Utilities */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  /* Responsive Utilities */
+  .responsive-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .responsive-padding {
+    @apply px-4 py-6 sm:px-6 md:px-8 md:py-8;
   }
 }

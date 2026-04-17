@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import Home from './pages/Home'
@@ -6,6 +7,11 @@ import CreateStream from './pages/CreateStream'
 import StreamDetail from './pages/StreamDetail'
 
 function App() {
+  useEffect(() => {
+    // Apply dark mode globally
+    document.documentElement.classList.add('dark')
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>

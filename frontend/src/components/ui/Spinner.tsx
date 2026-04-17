@@ -7,7 +7,7 @@ export default function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) 
 
   return (
     <div className={`inline-block ${sizeClasses[size]} animate-spin`}>
-      <div className="w-full h-full border-3 border-slate-200 border-t-vesper-600 rounded-full" />
+      <div className="w-full h-full border-2 border-slate-dark-700 border-t-vesper-500 rounded-full" />
     </div>
   )
 }
