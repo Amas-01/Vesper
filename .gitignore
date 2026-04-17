@@ -91,6 +91,11 @@ temp/
 contracts/deployments/
 contracts/build/
 
+# Network configuration files with credentials (NEVER commit)
+Mainnet.toml
+Testnet.toml
+settings/*.toml
+
 # API keys and secrets in files (these should be env vars)
 *-credentials.json
 *-secret.txt

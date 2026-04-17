@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Testnet Live](https://img.shields.io/badge/Testnet-Live-brightgreen.svg)](docs/DEPLOYMENT.md)
+[![Phase 1 Complete](https://img.shields.io/badge/Phase_1-75%25_Complete-blue.svg)](ROADMAP.md)
 
 ## 📋 Overview
 
@@ -17,6 +18,24 @@ Vesper is a decentralized payment streaming protocol built on Stacks that enable
 - 📦 **Batch payroll**: Pay multiple recipients in a single transaction
 - 📊 **Analytics dashboard**: Real-time tracking of payment streams and DAO governance
 
+## 📊 Phase 1 Implementation Status
+
+### ✅ Completed Tasks (Tasks 1.1 - 1.8)
+
+| Task | Feature | Status | Details |
+|------|---------|--------|---------|
+| **1.1-1.4** | Smart Contract Core | ✅ Complete | Data model, error handling, 9 state functions, 12 getters |
+| **1.5** | Unit Tests | ✅ Complete | 28/28 tests passing (100%) |
+| **1.6** | Frontend Scaffold | ✅ Complete | Vite 5, React 18, TypeScript, Tailwind CSS |
+| **1.7** | Wallet Integration | ✅ Complete | @stacks/connect with Hiro Wallet support |
+| **1.8** | Contract Builders & UI | ✅ Complete | 11 contract functions + dark mode system (20+ components) |
+
+### 🔄 In Progress (Tasks 1.9 - 1.12)
+- **1.9** CreateStream form with validation
+- **1.10** Dashboard with stream management
+- **1.11** Stream detail page with progress tracking
+- **1.12** GitHub Actions CI/CD pipeline
+
 ## ⚡ Quick Start
 
 ### 📋 Prerequisites
@@ -28,17 +47,17 @@ Vesper is a decentralized payment streaming protocol built on Stacks that enable
 
 ```bash
 # Clone repository
-git clone https://github.com/vesper-protocol/vesper-protocol.git
-cd vesper-protocol
+git clone https://github.com/Amas-01/Vesper.git
+cd Vesper
 
 # Install dependencies
 npm install
 
 # Run smart contract tests
-clarinet test
+cd contracts && clarinet test
 
 # Start development frontend
-npm run dev
+cd frontend && npm run dev
 
 # Build for production
 npm run build
@@ -46,42 +65,135 @@ npm run build
 
 ### Deploy to Testnet
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed testnet and mainnet deployment instructions.
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed testnet and mainnet deployment instructions.
 
 ## 📚 Documentation
 
-- 🗺️ [Roadmap](ROADMAP.md) - Development phases and timeline
+- 🗺️ [Roadmap](ROADMAP.md) - Complete Phase 1-3 timeline and task breakdown
 - 🏗️ [Architecture](docs/ARCHITECTURE.md) - System design and component overview
 - 🗄️ [Data Model](docs/DATA_MODEL.md) - Clarity data structures and storage
 - 📝 [Smart Contracts](docs/CONTRACTS.md) - Contract reference and function signatures
 - ⚛️ [Frontend Components](docs/FRONTEND_COMPONENTS.md) - React component library
 - 🧪 [Testing Strategy](docs/TESTING.md) - Test coverage and execution
 - 🚀 [Deployment Guide](docs/DEPLOYMENT.md) - Testnet and mainnet deployment
-- 🔐 [Security](docs/SECURITY.md) - Audit process and known limitations
 
 ## Project Structure
 
 ```
-vesper-protocol/
-├── contracts/              # Clarity smart contracts
-│   ├── core/              # Core streaming logic
-│   ├── dao/               # DAO governance
-│   └── registry/          # Contract registry
-├── frontend/              # React + TypeScript application
+Vesper/
+├── contracts/                          # Clarity smart contracts
+│   └── vesper-core.clar               # Core streaming logic (✅ Complete)
+│       ├── Stream data structure       # StreamData type definition
+│       ├── State-changing functions    # create, withdraw, cancel, topup, expire
+│       └── Read-only functions         # get-stream, get-balance, get-progress, etc.
+│
+├── frontend/                           # React + TypeScript web application
 │   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── pages/         # Page layouts
-│   │   └── services/      # Stacks integration
-│   └── public/
-├── scripts/               # Utility and deployment scripts
-├── tests/                 # Integration and end-to-end tests
-└── docs/                  # Additional documentation
+│   │   ├── components/                # React UI components (20+)
+│   │   │   ├── layout/               # Header, Footer, Layout wrapper
+│   │   │   ├── wallet/               # ConnectWallet, WalletStatus
+│   │   │   ├── stream/               # StreamCard, StreamList, Withdraw/Cancel buttons
+│   │   │   └── ui/                   # Button, Input, Modal, Badge, Spinner, Toast
+│   │   ├── pages/                    # Route pages (4)
+│   │   │   ├── Home.tsx              # Landing page with gradients
+│   │   │   ├── Dashboard.tsx         # Stream management dashboard
+│   │   │   ├── CreateStream.tsx      # Stream creation form
+│   │   │   └── StreamDetail.tsx      # Individual stream view with progress
+│   │   ├── hooks/                    # React custom hooks (✅ Complete)
+│   │   │   ├── useWallet.ts          # Wallet connection & auth
+│   │   │   ├── useStream.ts          # Contract state-changing operations
+│   │   │   └── useContract.ts        # Read-only contract queries
+│   │   ├── lib/                      # Utilities & helpers
+│   │   │   ├── contracts.ts          # Contract builders & fetchers (11 functions)
+│   │   │   ├── stacks.ts             # Network config & constants
+│   │   │   └── utils.ts              # Helper functions
+│   │   ├── store/                    # Zustand state management
+│   │   │   ├── walletStore.ts        # Wallet state (address, session)
+│   │   │   └── streamStore.ts        # Stream data cache
+│   │   ├── types/                    # TypeScript interfaces
+│   │   │   ├── stream.ts             # Stream, Progress types
+│   │   │   └── wallet.ts             # Wallet, Session types
+│   │   ├── App.tsx                   # Root component with dark mode
+│   │   ├── index.css                 # Dark mode design system (180+ lines)
+│   │   └── main.tsx                  # React entry point
+│   ├── tailwind.config.js             # Dark palette (vesper + slate-dark)
+│   ├── vite.config.ts                 # Vite build configuration
+│   └── package.json                   # npm dependencies (327 modules)
+│
+├── docs/                              # Additional documentation
+│   ├── ARCHITECTURE.md                # System design overview
+│   ├── DATA_MODEL.md                  # Clarity type definitions
+│   ├── CONTRACTS.md                   # Contract function reference
+│   ├── FRONTEND_COMPONENTS.md         # UI component catalog
+│   ├── TESTING.md                     # Test strategies
+│   └── DEPLOYMENT.md                  # Deploy to testnet/mainnet
+│
+├── tests/                             # Test files
+│   └── [Test fixtures and helpers]
+│
+├── deployments/                       # Deployment configurations
+│   └── [Network-specific configs]
+│
+├── settings/                          # Environment settings (.gitignore protected)
+│   └── [Network configs - not tracked]
+│
+├── ROADMAP.md                         # Phase 1-3 development timeline (✅ Updated)
+├── README.md                          # This file
+└── LICENSE                            # MIT License
 
 ```
 
+## 🔧 Key Technologies
+
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Smart Contracts | Clarity / Stacks | v2 |
+| Frontend Framework | React | 18.2.0 |
+| Build Tool | Vite | 5.4.21 |
+| Language | TypeScript | 5.3.3 |
+| Styling | Tailwind CSS | 3.3.0 |
+| State Management | Zustand | 4.4.0 |
+| Routing | React Router | 6.20.0 |
+| Wallet Integration | @stacks/connect | 7.2.0 |
+| Testing | Clarinet SDK | Latest |
+
+## 🚀 Development Workflow
+
+### Smart Contracts
+```bash
+cd contracts
+clarinet test                    # Run all unit tests
+clarinet run                     # Execute contract calls
+clarinet test --watch           # Watch mode testing
+```
+
+### Frontend
+```bash
+cd frontend
+npm run dev                      # Start dev server (http://localhost:5173)
+npm run build                    # Production build
+npm run preview                  # Preview production build
+npm run lint                     # ESLint checks
+```
+
+### Git Workflow
+- Feature branches: `feat/task-1.X-*`, `fix/*`, `style/*`
+- Batch commits by concern (not one-file-per-commit)
+- Detailed PR descriptions with scope/testing/impact
+- Squash merge to main after review
+
+## 📋 Branch Strategy
+
+**Current Feature Branches** (Ready for PR):
+- `feat/task-1.8-contract-builders` - Smart contract builders & React hooks
+- `style/dark-mode-redesign` - Complete dark mode UI system
+- `fix/connect-wallet-integration` - ConnectWallet modal & debugging
+
+**Merge Base**: `feat/frontend-vite-init` → Main development branch
+
 ## Team
 
-Vesper Protocol is developed by the Stacks community. For inquiries, reach out via our GitHub discussions.
+Vesper Protocol is developed by the Stacks community. For inquiries, reach out via [GitHub Discussions](https://github.com/Amas-01/Vesper/discussions).
 
 ## License
 
