@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
-import Home from '../../frontend/src/pages/Home'
-import Dashboard from '../../frontend/src/pages/Dashboard'
-import CreateStream from '../../frontend/src/pages/CreateStream'
-import StreamDetail from '../../frontend/src/pages/StreamDetail'
-import './App.css'
+import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
+import CreateStream from './pages/CreateStream'
+import StreamDetail from './pages/StreamDetail'
 
 function App() {
   return (
