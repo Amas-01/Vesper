@@ -2,7 +2,6 @@
 
 **Real-time per-block sBTC payroll and payment streaming on Bitcoin via Stacks**
 
-[![Build Status](https://github.com/Amas-01/Vesper/workflows/CI/badge.svg)](https://github.com/Amas-01/Vesper/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Testnet Live](https://img.shields.io/badge/Testnet-Live-brightgreen.svg)](docs/DEPLOYMENT.md)
 
