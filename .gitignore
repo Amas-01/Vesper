@@ -46,6 +46,15 @@ out/
 coverage/
 .nyc_output/
 
+# TypeScript build artifacts (only compiled outputs)
+frontend/src/**/*.js
+frontend/src/**/*.js.map
+frontend/src/**/*.d.ts.map
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts.map
+*.tsbuildinfo
+
 # Clarity build artifacts
 .clarinet/
 clarinet-cache/
@@ -88,8 +97,8 @@ contracts/build/
 .aws/
 .ssh/
 
-# Git secrets / hooks
-hooks/
+# Git directory hooks (not app code)
+.git/hooks/
 
 # Lock files committed to other branches (but not main)
 *yarn.lock
