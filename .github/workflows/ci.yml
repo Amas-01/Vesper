@@ -21,6 +21,14 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install Clarinet
         run: |
           wget -nv https://github.com/hirosystems/clarinet/releases/latest/download/clarinet-linux-x64-glibc.tar.gz
@@ -29,7 +37,7 @@ jobs:
           clarinet --version
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run contract tests
         run: npm run test
@@ -48,8 +56,16 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install frontend dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && npm install
 
       - name: Build frontend
         run: cd frontend && npm run build
