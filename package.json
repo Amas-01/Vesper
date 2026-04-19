@@ -8,7 +8,11 @@
   "scripts": {
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
-    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
+    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
+    "lint": "cd frontend && npm run lint 2>/dev/null || echo 'No lint script in frontend'",
+    "format:check": "cd frontend && npm run format:check 2>/dev/null || echo 'No format check in frontend'",
+    "build": "cd frontend && npm run build",
+    "build:testnet": "cd frontend && VITE_NETWORK=testnet npm run build"
   },
   "author": "",
   "license": "ISC",

@@ -11,6 +11,9 @@ export const getNetwork = () =>
     ? NETWORKS.testnet
     : NETWORKS.mainnet
 
+export const getNetworkName = () =>
+  import.meta.env.VITE_NETWORK === 'testnet' ? 'testnet' : 'mainnet'
+
 export const CONTRACT_CONFIG = {
   vesperCore: {
     address: import.meta.env.VITE_VESPER_CORE_ADDRESS ?? '',
