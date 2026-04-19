@@ -51,7 +51,9 @@ export default function StreamDetail() {
     return (
       <div className="min-h-screen bg-dark-background pb-20">
         <div className="max-w-4xl mx-auto px-4 pt-12">
-          <Skeleton count={5} />
+          <div className="space-y-6">
+            <Skeleton count={3} />
+          </div>
         </div>
       </div>
     )
@@ -61,8 +63,9 @@ export default function StreamDetail() {
     return (
       <div className="min-h-screen bg-dark-background pb-20">
         <div className="max-w-4xl mx-auto px-4 pt-12">
-          <div className="vesper-card p-6 text-center">
-            <p className="text-red-400 mb-4">{error || 'Stream not found'}</p>
+          <div className="vesper-card p-6 bg-red-500/10 border border-red-500/30">
+            <h2 className="text-lg font-bold text-red-400 mb-2">Error Loading Stream</h2>
+            <p className="text-red-300 mb-4">{error || 'Stream not found. It may have been deleted or you do not have access.'}</p>
             <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
           </div>
         </div>
