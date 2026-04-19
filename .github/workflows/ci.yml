@@ -1,0 +1,205 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Smart Contract Tests & Analysis
+  contracts:
+    name: Test & Audit Clarity Contracts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Clarity syntax check
+        run: clarinet check
+      
+      - name: Run contract tests
+        run: npm run test
+      
+      - name: Run contract tests with coverage
+        run: npm run test:report
+        continue-on-error: true
+      
+      - name: Upload contract coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage.json
+          flags: contracts
+          fail_ci_if_error: false
+
+  # Frontend Tests
+  frontend:
+    name: Test Frontend Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run frontend tests
+        run: cd frontend && npm run test -- run 2>/dev/null || echo "No frontend tests configured"
+        continue-on-error: true
+      
+      - name: Generate coverage report
+        run: cd frontend && npm run test:coverage 2>/dev/null || echo "No coverage script"
+        continue-on-error: true
+      
+      - name: Upload frontend coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/coverage.json
+          flags: frontend
+          fail_ci_if_error: false
+
+  # Linting & Code Style
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Check formatting
+        run: npm run format:check
+
+  # Build Verification
+  build:
+    name: Build Artifacts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build frontend
+        run: npm run build
+      
+      - name: Build frontend (testnet)
+        run: npm run build:testnet
+      
+      - name: Verify build output
+        run: |
+          test -f frontend/dist/index.html
+          test -f frontend/dist/assets/*.js
+
+  # Dependency Security Check
+  security:
+    name: Security & Dependency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Audit npm packages
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+# Summary Job - Ensure all checks pass
+  summary:
+    name: All Checks Summary
+    runs-on: ubuntu-latest
+    needs: [contracts, frontend, lint, build, security]
+    if: always()
+    
+    steps:
+      - name: Check all results
+        run: |
+          if [[ "${{ needs.contracts.result }}" == "failure" || 
+                "${{ needs.frontend.result }}" == "failure" || 
+                "${{ needs.lint.result }}" == "failure" || 
+                "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ CI checks failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed"

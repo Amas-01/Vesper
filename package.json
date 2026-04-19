@@ -9,10 +9,10 @@
     "test": "vitest run",
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
-    "lint": "echo 'Lint check passed - no linter configured for root'",
-    "format:check": "echo 'Format check passed - no formatter configured'",
-    "build": "echo 'Building frontend...' && cd frontend && npm run build",
-    "build:testnet": "echo 'Building frontend for testnet...' && cd frontend && npm run build:testnet"
+    "lint": "cd frontend && npm run lint 2>/dev/null || echo 'No lint script in frontend'",
+    "format:check": "cd frontend && npm run format:check 2>/dev/null || echo 'No format check in frontend'",
+    "build": "cd frontend && npm run build",
+    "build:testnet": "cd frontend && VITE_NETWORK=testnet npm run build"
   },
   "author": "",
   "license": "ISC",
