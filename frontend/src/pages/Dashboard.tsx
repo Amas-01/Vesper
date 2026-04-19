@@ -66,6 +66,26 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-dark-background pb-20">
       <div className="max-w-7xl mx-auto px-4 pt-12">
+        {/* Summary Stats */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <div className="vesper-card p-4">
+            <p className="text-dark-text-secondary text-sm mb-2">Streams Sent</p>
+            <p className="text-2xl font-bold text-vesper-300">{sentStreams.length}</p>
+          </div>
+          <div className="vesper-card p-4">
+            <p className="text-dark-text-secondary text-sm mb-2">Streams Receiving</p>
+            <p className="text-2xl font-bold text-vesper-300">{receivedStreams.length}</p>
+          </div>
+          <div className="vesper-card p-4">
+            <p className="text-dark-text-secondary text-sm mb-2">Total Sending</p>
+            <p className="text-2xl font-bold text-blue-300">- STX</p>
+          </div>
+          <div className="vesper-card p-4">
+            <p className="text-dark-text-secondary text-sm mb-2">Claimable</p>
+            <p className="text-2xl font-bold text-green-300">- STX</p>
+          </div>
+        </div>
+
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-4xl font-bold text-gradient mb-1">Dashboard</h1>

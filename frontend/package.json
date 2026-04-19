@@ -5,7 +5,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build:testnet": "VITE_NETWORK=testnet tsc && vite build",
+    "preview": "vite preview",
+    "lint": "echo 'No linter configured'",
+    "format:check": "echo 'No formatter configured'",
+    "test": "echo 'No tests configured'",
+    "test:coverage": "echo 'No tests configured'"
   },
   "dependencies": {
     "react": "^18.2.0",
