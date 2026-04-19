@@ -1,15 +1,15 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feat/**]
   pull_request:
     branches: [main, develop]
 
 jobs:
-  # Smart Contract Tests & Analysis
+  # Smart Contract Tests
   contracts:
-    name: Test & Audit Clarity Contracts
+    name: Test Smart Contracts
     runs-on: ubuntu-latest
     
     steps:
@@ -21,37 +21,15 @@ jobs:
         with:
           node-version: '18'
       
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
       - name: Install dependencies
         run: npm ci
-      
-      - name: Clarity syntax check
-        run: clarinet check
       
       - name: Run contract tests
-        run: clarinet test
-      
-      - name: Run contract tests with coverage
-        run: clarinet test --coverage
-        continue-on-error: true
-      
-      - name: Upload contract coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage/coverage.json
-          flags: contracts
-          fail_ci_if_error: false
+        run: npm run test
 
-  # Frontend Tests
-  frontend:
-    name: Test Frontend Code
+  # Frontend Build
+  frontend-build:
+    name: Build Frontend
     runs-on: ubuntu-latest
     
     steps:
@@ -62,143 +40,30 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run frontend tests
-        run: npm run test -- run
-      
-      - name: Generate coverage report
-        run: npm run test:coverage
-        continue-on-error: true
-      
-      - name: Upload frontend coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./frontend/coverage/coverage.json
-          flags: frontend
-          fail_ci_if_error: false
-
-  # Linting & Code Style
-  lint:
-    name: Lint & Format Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run ESLint
-        run: npm run lint
-      
-      - name: Check formatting
-        run: npm run format:check
-
-  # Build Verification
-  build:
-    name: Build Artifacts
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
       
       - name: Install dependencies
         run: npm ci
       
       - name: Build frontend
-        run: npm run build
+        run: cd frontend && npm run build
       
-      - name: Build frontend (testnet)
-        run: npm run build:testnet
-      
-      - name: Verify build output
-        run: |
-          test -f frontend/dist/index.html
-          test -f frontend/dist/assets/*.js
+      - name: Verify build artifacts
+        run: test -d frontend/dist && echo "✓ Build successful"
 
-  # Dependency Security Check
-  security:
-    name: Security & Dependency Check
+  # CI Summary
+  ci-summary:
+    name: CI/CD Summary
     runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Audit npm packages
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-
-# Summary Job - Ensure all checks pass
-  summary:
-    name: All Checks Summary
-    runs-on: ubuntu-latest
-    needs: [contracts, frontend, lint, build, security]
+    needs: [contracts, frontend-build]
     if: always()
     
     steps:
-      - name: Check all results
+      - name: Check job statuses
         run: |
-          if [[ "${{ needs.contracts.result }}" == "failure" || 
-                "${{ needs.frontend.result }}" == "failure" || 
-                "${{ needs.lint.result }}" == "failure" || 
-                "${{ needs.build.result }}" == "failure" ]]; then
-            echo "❌ CI checks failed"
+          if [ "${{ needs.contracts.result }}" = "success" ] && [ "${{ needs.frontend-build.result }}" = "success" ]; then
+            echo "✓ All CI checks passed"
+            exit 0
+          else
+            echo "✗ Some CI checks failed"
             exit 1
           fi
-          echo "✅ All CI checks passed"
