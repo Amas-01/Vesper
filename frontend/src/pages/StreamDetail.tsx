@@ -1,17 +1,20 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useContract } from '../hooks/useContract'
+import { useStream } from '../hooks/useStream'
 import { useWallet } from '../hooks/useWallet'
 import type { StreamData } from '../types/stream'
 import AddressDisplay from '../components/ui/AddressDisplay'
 import Skeleton from '../components/ui/Skeleton'
 import Button from '../components/ui/Button'
+import StreamHistory from '../components/stream/StreamHistory'
 
 export default function StreamDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { address } = useWallet()
   const { getStream } = useContract()
+  const { withdrawFromStream, topUpStream, cancelStream } = useStream()
   
   const [stream, setStream] = useState<StreamData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -162,31 +165,15 @@ export default function StreamDetail() {
 
           {/* Sidebar Actions */}
           <div className="lg:col-span-1">
-            <div className="vesper-card p-6 h-fit space-y-4 sticky top-32">
-              <h3 className="font-bold text-dark-text">Actions</h3>
-              
-              {isRecipient && (
-                <Button className="w-full" variant="primary">
-                  Withdraw Funds
-                </Button>
-              )}
-              
-              {isOwner && (
-                <>
-                  <Button className="w-full" variant="secondary">
-                    Top Up Stream
-                  </Button>
-                  <Button className="w-full" variant="danger">
-                    Cancel Stream
-                  </Button>
-                </>
-              )}
-
-              {!isOwner && !isRecipient && (
-                <p className="text-xs text-dark-text-secondary text-center">
-                  You are not involved in this stream
-                </p>
-              )}
+            <div className="space-y-4 sticky top-32">
+              <StreamHistory
+                streamId={stream.id}
+                isOwner={isOwner}
+                isRecipient={isRecipient}
+                onWithdraw={() => withdrawFromStream(stream.id)}
+                onTopUp={() => topUpStream(stream.id, BigInt(0), stream.sender)}
+                onCancel={() => cancelStream(stream.id)}
+              />
             </div>
           </div>
         </div>
