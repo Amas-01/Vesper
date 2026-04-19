@@ -1,0 +1,69 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop, feat/**]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Smart Contract Tests
+  contracts:
+    name: Test Smart Contracts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run contract tests
+        run: npm run test
+
+  # Frontend Build
+  frontend-build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build frontend
+        run: cd frontend && npm run build
+      
+      - name: Verify build artifacts
+        run: test -d frontend/dist && echo "✓ Build successful"
+
+  # CI Summary
+  ci-summary:
+    name: CI/CD Summary
+    runs-on: ubuntu-latest
+    needs: [contracts, frontend-build]
+    if: always()
+    
+    steps:
+      - name: Check job statuses
+        run: |
+          if [ "${{ needs.contracts.result }}" = "success" ] && [ "${{ needs.frontend-build.result }}" = "success" ]; then
+            echo "✓ All CI checks passed"
+            exit 0
+          else
+            echo "✗ Some CI checks failed"
+            exit 1
+          fi
