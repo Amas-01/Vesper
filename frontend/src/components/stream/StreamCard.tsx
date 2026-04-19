@@ -8,8 +8,8 @@ interface StreamCardProps {
 }
 
 export default function StreamCard({ stream, onCancel }: StreamCardProps) {
-  const progressPercent = stream.totalAmount > 0n
-    ? (Number(stream.withdrawn) / Number(stream.totalAmount)) * 100
+  const progressPercent = stream.deposit > 0n
+    ? (Number(stream.totalWithdrawn) / Number(stream.deposit)) * 100
     : 0
 
   const statusColors = {
@@ -18,6 +18,9 @@ export default function StreamCard({ stream, onCancel }: StreamCardProps) {
     cancelled: 'vesper-badge-danger',
     expired: 'vesper-badge-neutral',
   }
+
+  // Determine status based on stream state
+  const status = stream.paused ? 'paused' : 'active'
 
   return (
     <div className="vesper-card-hover p-6">
@@ -31,8 +34,8 @@ export default function StreamCard({ stream, onCancel }: StreamCardProps) {
             {(Number(stream.ratePerBlock) / 1_000_000).toFixed(6)} STX/block
           </p>
         </div>
-        <span className={`vesper-badge ${statusColors[stream.status as keyof typeof statusColors]}`}>
-          {stream.status}
+        <span className={`vesper-badge ${statusColors[status as keyof typeof statusColors]}`}>
+          {status}
         </span>
       </div>
 
@@ -52,22 +55,22 @@ export default function StreamCard({ stream, onCancel }: StreamCardProps) {
       <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
         <div>
           <p className="text-dark-text-secondary">Deposited</p>
-          <p className="font-semibold text-dark-text">{(Number(stream.totalAmount) / 1_000_000).toFixed(2)} STX</p>
+          <p className="font-semibold text-dark-text">{(Number(stream.deposit) / 1_000_000).toFixed(2)} STX</p>
         </div>
         <div>
           <p className="text-dark-text-secondary">Streamed</p>
-          <p className="font-semibold text-dark-text">{(Number(stream.withdrawn) / 1_000_000).toFixed(2)} STX</p>
+          <p className="font-semibold text-dark-text">{(Number(stream.totalWithdrawn) / 1_000_000).toFixed(2)} STX</p>
         </div>
         <div>
           <p className="text-dark-text-secondary">Remaining</p>
           <p className="font-semibold text-vesper-300">
-            {(Number(stream.totalAmount - stream.withdrawn) / 1_000_000).toFixed(2)} STX
+            {(Number(stream.deposit - stream.totalWithdrawn) / 1_000_000).toFixed(2)} STX
           </p>
         </div>
       </div>
 
       <div className="flex gap-2">
-        <WithdrawButton streamId={stream.id} claimableAmount={stream.totalAmount - stream.withdrawn} />
+        <WithdrawButton streamId={stream.id} claimableAmount={stream.deposit - stream.totalWithdrawn} />
         <CancelButton onCancel={() => onCancel?.(stream.id)} />
       </div>
     </div>
