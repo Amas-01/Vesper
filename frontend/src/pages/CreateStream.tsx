@@ -12,7 +12,7 @@ const BLOCKS_PER_DAY = 144
 
 export default function CreateStream() {
   const navigate = useNavigate()
-  const { address } = useWallet()
+  const { address, isConnected } = useWallet()
   const { createStream, isLoading } = useStream()
   const { formData, calculations } = useStreamForm()
   const [toast, setToast] = useState<{ id: string; type: 'success' | 'error' | 'info' | 'warning'; message: string } | null>(null)
@@ -75,6 +75,13 @@ export default function CreateStream() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
           <div className="lg:col-span-2">
+            {!isConnected && (
+              <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-yellow-400 text-sm">
+                  📌 Connect your wallet to create a payment stream
+                </p>
+              </div>
+            )}
             <CreateStreamForm onSubmit={handleSubmit} isLoading={isLoading} />
           </div>
 
