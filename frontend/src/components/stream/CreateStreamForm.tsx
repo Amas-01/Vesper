@@ -1,101 +1,61 @@
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
+import { useStreamForm } from '../../hooks/useStreamForm'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
-import { isValidPrincipal } from '../../lib/validation'
-
-interface FormData {
-  recipient: string
-  totalDeposit: string
-  durationDays: string
-  memo: string
-}
-
-interface FormErrors {
-  recipient?: string
-  totalDeposit?: string
-  durationDays?: string
-}
 
 interface CreateStreamFormProps {
-  onSubmit?: (data: FormData) => Promise<void>
+  onSubmit?: (data: any) => Promise<void>
   isLoading?: boolean
 }
 
 export default function CreateStreamForm({ onSubmit, isLoading = false }: CreateStreamFormProps) {
-  const [formData, setFormData] = useState<FormData>({
-    recipient: '',
-    totalDeposit: '',
-    durationDays: '',
-    memo: '',
-  })
+  const { formData, setFormData, setTouched, getFieldError, isValid, calculations, resetForm } = useStreamForm()
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({})
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error when user starts typing
-    if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
-    }
-  }, [errors])
+    setFormData({ [name]: value })
+    setError(null)
+  }
 
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target
-    setTouched(prev => ({ ...prev, [name]: true }))
-  }, [])
-
-  const validateForm = useCallback((): boolean => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.recipient.trim()) {
-      newErrors.recipient = 'Recipient address is required'
-    } else if (!isValidPrincipal(formData.recipient)) {
-      newErrors.recipient = 'Invalid recipient address'
-    }
-
-    if (!formData.totalDeposit.trim()) {
-      newErrors.totalDeposit = 'Deposit amount is required'
-    } else {
-      const amount = parseFloat(formData.totalDeposit)
-      if (isNaN(amount) || amount <= 0) {
-        newErrors.totalDeposit = 'Amount must be greater than 0'
-      }
-    }
-
-    if (!formData.durationDays.trim()) {
-      newErrors.durationDays = 'Duration is required'
-    } else {
-      const days = parseFloat(formData.durationDays)
-      if (isNaN(days) || days <= 0) {
-        newErrors.durationDays = 'Duration must be greater than 0'
-      }
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }, [formData])
+    setTouched(name as any, true)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    if (!isValid) {
+      setError('Please fix validation errors before submitting')
       return
     }
 
     if (onSubmit) {
+      setSubmitting(true)
       try {
         await onSubmit(formData)
+        resetForm()
       } catch (err) {
-        console.error('Form submission error:', err)
+        setError(err instanceof Error ? err.message : 'Failed to create stream')
+      } finally {
+        setSubmitting(false)
       }
     }
   }
 
+  const isLoadingAnSubmitting = isLoading || submitting
+
   return (
     <form onSubmit={handleSubmit} className="vesper-card p-6 space-y-6">
       <h2 className="text-xl font-bold text-dark-text mb-6">Create New Stream</h2>
+
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Recipient Address */}
       <div>
@@ -109,11 +69,11 @@ export default function CreateStreamForm({ onSubmit, isLoading = false }: Create
           onChange={handleChange}
           onBlur={handleBlur}
           placeholder="SP... or SN..."
-          disabled={isLoading}
-          className={touched.recipient && errors.recipient ? 'border-red-500' : ''}
+          disabled={isLoadingAnSubmitting}
+          className={getFieldError('recipient') ? 'border-red-500' : ''}
         />
-        {touched.recipient && errors.recipient && (
-          <p className="text-red-500 text-sm mt-1">{errors.recipient}</p>
+        {getFieldError('recipient') && (
+          <p className="text-red-500 text-sm mt-1">{getFieldError('recipient')}</p>
         )}
         <p className="text-dark-text-secondary text-xs mt-1">
           The Stacks address that will receive the stream
@@ -134,11 +94,11 @@ export default function CreateStreamForm({ onSubmit, isLoading = false }: Create
           placeholder="10"
           step="0.1"
           min="0"
-          disabled={isLoading}
-          className={touched.totalDeposit && errors.totalDeposit ? 'border-red-500' : ''}
+          disabled={isLoadingAnSubmitting}
+          className={getFieldError('totalDeposit') ? 'border-red-500' : ''}
         />
-        {touched.totalDeposit && errors.totalDeposit && (
-          <p className="text-red-500 text-sm mt-1">{errors.totalDeposit}</p>
+        {getFieldError('totalDeposit') && (
+          <p className="text-red-500 text-sm mt-1">{getFieldError('totalDeposit')}</p>
         )}
         <p className="text-dark-text-secondary text-xs mt-1">
           Total amount to be streamed (minus 0.25% protocol fee)
@@ -159,11 +119,11 @@ export default function CreateStreamForm({ onSubmit, isLoading = false }: Create
           placeholder="30"
           step="1"
           min="1"
-          disabled={isLoading}
-          className={touched.durationDays && errors.durationDays ? 'border-red-500' : ''}
+          disabled={isLoadingAnSubmitting}
+          className={getFieldError('durationDays') ? 'border-red-500' : ''}
         />
-        {touched.durationDays && errors.durationDays && (
-          <p className="text-red-500 text-sm mt-1">{errors.durationDays}</p>
+        {getFieldError('durationDays') && (
+          <p className="text-red-500 text-sm mt-1">{getFieldError('durationDays')}</p>
         )}
         <p className="text-dark-text-secondary text-xs mt-1">
           How many days the stream should run
@@ -181,7 +141,7 @@ export default function CreateStreamForm({ onSubmit, isLoading = false }: Create
           onChange={handleChange}
           onBlur={handleBlur}
           placeholder="Add a note about this stream..."
-          disabled={isLoading}
+          disabled={isLoadingAnSubmitting}
           rows={3}
           className="w-full px-4 py-2 rounded-lg bg-dark-surface border border-dark-border text-dark-text placeholder-dark-text-secondary focus:outline-none focus:ring-2 focus:ring-vesper-500 disabled:opacity-50"
         />
@@ -190,13 +150,36 @@ export default function CreateStreamForm({ onSubmit, isLoading = false }: Create
         </p>
       </div>
 
+      {/* Summary Info */}
+      {calculations && (
+        <div className="p-4 bg-vesper-500/5 border border-vesper-500/30 rounded-lg space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-dark-text-secondary">Protocol Fee (0.25%):</span>
+            <span className="text-dark-text font-mono">{calculations.protocolFeeStx.toFixed(6)} STX</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-dark-text-secondary">Net Deposit:</span>
+            <span className="text-vesper-300 font-mono font-bold">{calculations.netDepositStx.toFixed(6)} STX</span>
+          </div>
+          <div className="vesper-divider"></div>
+          <div className="flex justify-between">
+            <span className="text-dark-text-secondary">Daily Stream Rate:</span>
+            <span className="text-dark-text font-mono">{calculations.dailyStreamAmountStx.toFixed(6)} STX/day</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-dark-text-secondary">Per Block Rate:</span>
+            <span className="text-dark-text font-mono">{(Number(calculations.ratePerBlockUstx) / 1_000_000).toFixed(8)} STX/block</span>
+          </div>
+        </div>
+      )}
+
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoadingAnSubmitting || !isValid}
         className="w-full"
       >
-        {isLoading ? 'Creating Stream...' : 'Create Stream'}
+        {isLoadingAnSubmitting ? 'Creating Stream...' : 'Create Stream'}
       </Button>
     </form>
   )
