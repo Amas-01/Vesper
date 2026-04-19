@@ -22,40 +22,40 @@ export function useStream() {
   )
 
   const withdrawFromStream = useCallback(
-    async (streamId: bigint, recipientAddress: string) => {
-      const tx = buildWithdrawTx({ streamId, recipientAddress })
+    async (streamId: bigint) => {
+      const tx = buildWithdrawTx({ streamId })
       await contract.call(tx)
     },
     [contract]
   )
 
   const cancelStream = useCallback(
-    async (streamId: bigint, senderAddress: string, reason?: string) => {
-      const tx = buildCancelStreamTx({ streamId, reason, senderAddress })
+    async (streamId: bigint) => {
+      const tx = buildCancelStreamTx({ streamId })
       await contract.call(tx)
     },
     [contract]
   )
 
   const topUpStream = useCallback(
-    async (streamId: bigint, additional: bigint, senderAddress: string) => {
-      const tx = buildTopUpTx({ streamId, additional, senderAddress })
+    async (streamId: bigint, topUpAmount: bigint, senderAddress: string) => {
+      const tx = buildTopUpTx({ streamId, topUpAmount, senderAddress })
       await contract.call(tx)
     },
     [contract]
   )
 
   const expireStream = useCallback(
-    async (streamId: bigint, callerAddress: string) => {
-      const tx = buildExpireStreamTx({ streamId, callerAddress })
+    async (streamId: bigint) => {
+      const tx = buildExpireStreamTx({ streamId })
       await contract.call(tx)
     },
     [contract]
   )
 
   const returnFunds = useCallback(
-    async (senderAddress: string) => {
-      const tx = buildReturnFundsTx({ senderAddress })
+    async (streamId: bigint, senderAddress: string, returnAmount: bigint) => {
+      const tx = buildReturnFundsTx({ streamId, senderAddress, returnAmount })
       await contract.call(tx)
     },
     [contract]

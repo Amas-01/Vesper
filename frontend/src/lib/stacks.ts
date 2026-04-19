@@ -1,8 +1,8 @@
-import { StacksMainnet, StacksTestnet } from '@stacks/network'
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network'
 
 export const NETWORKS = {
-  mainnet: new StacksMainnet(),
-  testnet: new StacksTestnet(),
+  mainnet: STACKS_MAINNET,
+  testnet: STACKS_TESTNET,
 }
 
 // Default to mainnet — all production interactions use mainnet

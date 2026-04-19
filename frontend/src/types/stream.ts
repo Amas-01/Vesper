@@ -13,6 +13,9 @@ export interface StreamData {
   paused: boolean
 }
 
+// Alias for compatibility
+export type Stream = StreamData
+
 export interface StreamProgress {
   totalBlocks: bigint
   blocksElapsed: bigint
