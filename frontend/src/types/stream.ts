@@ -1,46 +1,46 @@
-// Placeholder types for stream operations
-// TODO: Replace with actual generated types from contract ABI
-
-export interface Stream {
-  id: bigint
-  payer: string
-  recipient: string
-  totalAmount: bigint
-  withdrawn: bigint
-  startBlock: bigint
-  endBlock: bigint
-  ratePerBlock: bigint
-  status: 'active' | 'paused' | 'cancelled' | 'expired'
-  escrowModel: string
-  createdAt: bigint
-}
+export type NetworkType = 'mainnet' | 'testnet'
 
 export interface StreamData {
   id: bigint
-  payer: string
+  sender: string
   recipient: string
-  totalAmount: bigint
-  withdrawn: bigint
-  startBlock: bigint
-  endBlock: bigint
+  deposit: bigint
   ratePerBlock: bigint
-  status: string
-  escrowModel: string
-  createdAt: bigint
+  startBlock: bigint
+  stopBlock: bigint
+  totalWithdrawn: bigint
+  memo?: string
+  paused: boolean
 }
 
 export interface StreamProgress {
-  streamId: bigint
-  totalAmount: bigint
-  accruedAmount: bigint
-  claimableAmount: bigint
+  totalBlocks: bigint
+  blocksElapsed: bigint
+  streamed: bigint
+  withdrawn: bigint
+  claimable: bigint
+  currentBlock: bigint
   percentComplete: number
 }
 
 export interface CreateStreamParams {
   recipient: string
-  totalDeposit: bigint
+  deposit: bigint
   ratePerBlock: bigint
-  durationBlocks: bigint
-  memo: string
+  stopBlock: bigint
+  memo?: string
+}
+
+export interface BatchStreamEntry {
+  recipient: string
+  ratePerBlock: bigint
+  stopBlock: bigint
+}
+
+export interface StreamEvent {
+  type: 'created' | 'withdrawn' | 'cancelled' | 'paused' | 'resumed'
+  streamId: bigint
+  amount?: bigint
+  timestamp: number
+  txHash: string
 }

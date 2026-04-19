@@ -1,25 +1,36 @@
-import { STACKS_MAINNET, STACKS_TESTNET, StacksNetwork } from '@stacks/network'
+import { StacksMainnet, StacksTestnet } from '@stacks/network'
 
-// Export network configurations
-export { STACKS_TESTNET, STACKS_MAINNET }
-export type { StacksNetwork }
-
-// Contract configuration
-export const VESPER_CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS as string) || 'SP2C2YFP12AJZB4CJXEMUC4PSE2M7EJ4FSJ58D1A6'
-export const VESPER_CONTRACT_NAME = 'vesper-core'
-
-// Get current network based on environment
-export function getCurrentNetwork(): StacksNetwork {
-  const network = (import.meta.env.VITE_NETWORK as string) || 'testnet'
-  return network === 'mainnet' ? STACKS_MAINNET : STACKS_TESTNET
+export const NETWORKS = {
+  mainnet: new StacksMainnet(),
+  testnet: new StacksTestnet(),
 }
 
-// Helper functions for network operations
-export function getNetworkName(): string {
-  return (import.meta.env.VITE_NETWORK as string) === 'mainnet' ? 'Mainnet' : 'Testnet'
+// Default to mainnet — all production interactions use mainnet
+export const getNetwork = () =>
+  import.meta.env.VITE_NETWORK === 'testnet'
+    ? NETWORKS.testnet
+    : NETWORKS.mainnet
+
+export const CONTRACT_CONFIG = {
+  vesperCore: {
+    address: import.meta.env.VITE_VESPER_CORE_ADDRESS ?? '',
+    name: 'vesper-core',
+  },
+  vesperDao: {
+    address: import.meta.env.VITE_VESPER_DAO_ADDRESS ?? '',
+    name: 'vesper-dao',
+  },
+  vesperRegistry: {
+    address: import.meta.env.VITE_VESPER_REGISTRY_ADDRESS ?? '',
+    name: 'vesper-registry',
+  },
 }
 
-export function isMainnet(): boolean {
-  return (import.meta.env.VITE_NETWORK as string) === 'mainnet'
-}
+export const EXPLORER_BASE = import.meta.env.VITE_NETWORK === 'testnet'
+  ? 'https://explorer.hiro.so/?chain=testnet'
+  : 'https://explorer.hiro.so'
+
+export const STACKS_API_BASE = import.meta.env.VITE_NETWORK === 'testnet'
+  ? 'https://api.testnet.hiro.so'
+  : 'https://api.hiro.so'
 
