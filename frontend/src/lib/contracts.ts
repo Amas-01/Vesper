@@ -4,278 +4,296 @@ import {
   uintCV,
   principalCV,
   stringAsciiCV,
-  type ContractCallOptions,
+  noneCV,
+  someCV,
+  PostConditionMode,
+  AnchorMode,
+  Pc,
+  type PostCondition,
 } from '@stacks/transactions'
 import type { StacksNetwork } from '@stacks/network'
-import { VESPER_CONTRACT_ADDRESS, VESPER_CONTRACT_NAME, getCurrentNetwork } from './stacks'
-import type { StreamData, StreamProgress } from '../types/stream'
+import { CONTRACT_CONFIG } from './stacks'
+import type { StreamData, StreamProgress, CreateStreamParams } from '../types/stream'
 
 /**
  * STATE-CHANGING FUNCTION BUILDERS
  */
 
-interface CreateStreamTxParams {
-  recipient: string
-  deposit: bigint
-  ratePerBlock: bigint
-  durationBlocks: bigint
-  memo: string
-  senderAddress: string
-}
+export function buildCreateStreamTx(params: CreateStreamParams & { senderAddress: string }) {
+  const { recipient, deposit, ratePerBlock, stopBlock, memo, senderAddress } = params
 
-export function buildCreateStreamTx(params: CreateStreamTxParams): ContractCallOptions {
-  const { recipient, deposit, ratePerBlock, durationBlocks, memo, senderAddress } = params
+  const postConditions: PostCondition[] = [
+    Pc.principal(senderAddress)
+      .willSendLte(deposit)
+      .ustx(),
+  ]
 
   return {
-    contractAddress: VESPER_CONTRACT_ADDRESS,
-    contractName: VESPER_CONTRACT_NAME,
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
     functionName: 'create-stream',
     functionArgs: [
       principalCV(recipient),
       uintCV(deposit),
       uintCV(ratePerBlock),
-      uintCV(durationBlocks),
-      stringAsciiCV(memo),
+      uintCV(stopBlock),
+      memo ? someCV(stringAsciiCV(memo)) : noneCV(),
     ],
-    senderAddress,
-    // Post conditions will be added later when we have the exact token handling logic
-    postConditionMode: undefined,
-  } as ContractCallOptions
+    postConditionMode: PostConditionMode.Allow,
+    postConditions,
+    anchorMode: AnchorMode.Any,
+  }
 }
 
-interface WithdrawTxParams {
-  streamId: bigint
-  recipientAddress: string
-}
-
-export function buildWithdrawTx(params: WithdrawTxParams): ContractCallOptions {
-  const { streamId, recipientAddress } = params
+export function buildWithdrawTx(params: { streamId: bigint }) {
+  const { streamId } = params
 
   return {
-    contractAddress: VESPER_CONTRACT_ADDRESS,
-    contractName: VESPER_CONTRACT_NAME,
-    functionName: 'withdraw-from-stream',
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
+    functionName: 'withdraw-stream',
     functionArgs: [uintCV(streamId)],
-    senderAddress: recipientAddress,
-  } as ContractCallOptions
+    anchorMode: AnchorMode.Any,
+  }
 }
 
-interface CancelStreamTxParams {
-  streamId: bigint
-  senderAddress: string
-}
-
-export function buildCancelStreamTx(params: CancelStreamTxParams): ContractCallOptions {
-  const { streamId, senderAddress } = params
+export function buildCancelStreamTx(params: { streamId: bigint }) {
+  const { streamId } = params
 
   return {
-    contractAddress: VESPER_CONTRACT_ADDRESS,
-    contractName: VESPER_CONTRACT_NAME,
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
     functionName: 'cancel-stream',
     functionArgs: [uintCV(streamId)],
-    senderAddress,
-  } as ContractCallOptions
+    anchorMode: AnchorMode.Any,
+  }
 }
 
-interface TopUpTxParams {
-  streamId: bigint
-  additional: bigint
-  senderAddress: string
-}
+export function buildTopUpTx(params: { streamId: bigint; topUpAmount: bigint; senderAddress: string }) {
+  const { streamId, topUpAmount, senderAddress } = params
 
-export function buildTopUpTx(params: TopUpTxParams): ContractCallOptions {
-  const { streamId, additional, senderAddress } = params
+  const postConditions: PostCondition[] = [
+    Pc.principal(senderAddress)
+      .willSendLte(topUpAmount)
+      .ustx(),
+  ]
 
   return {
-    contractAddress: VESPER_CONTRACT_ADDRESS,
-    contractName: VESPER_CONTRACT_NAME,
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
     functionName: 'top-up-stream',
-    functionArgs: [uintCV(streamId), uintCV(additional)],
-    senderAddress,
-  } as ContractCallOptions
+    functionArgs: [uintCV(streamId), uintCV(topUpAmount)],
+    postConditionMode: PostConditionMode.Allow,
+    postConditions,
+    anchorMode: AnchorMode.Any,
+  }
 }
 
-interface ExpireStreamTxParams {
-  streamId: bigint
-  callerAddress: string
-}
-
-export function buildExpireStreamTx(params: ExpireStreamTxParams): ContractCallOptions {
-  const { streamId, callerAddress } = params
+export function buildExpireStreamTx(params: { streamId: bigint }) {
+  const { streamId } = params
 
   return {
-    contractAddress: VESPER_CONTRACT_ADDRESS,
-    contractName: VESPER_CONTRACT_NAME,
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
     functionName: 'expire-stream',
     functionArgs: [uintCV(streamId)],
-    senderAddress: callerAddress,
-  } as ContractCallOptions
+    anchorMode: AnchorMode.Any,
+  }
+}
+
+export function buildReturnFundsTx(params: { streamId: bigint; senderAddress: string; returnAmount: bigint }) {
+  const { streamId, senderAddress, returnAmount } = params
+
+  const postConditions: PostCondition[] = [
+    Pc.principal(senderAddress)
+      .willSendLte(returnAmount)
+      .ustx(),
+  ]
+
+  return {
+    contractAddress: CONTRACT_CONFIG.vesperCore.address,
+    contractName: CONTRACT_CONFIG.vesperCore.name,
+    functionName: 'return-funds',
+    functionArgs: [uintCV(streamId), uintCV(returnAmount)],
+    postConditionMode: PostConditionMode.Allow,
+    postConditions,
+    anchorMode: AnchorMode.Any,
+  }
 }
 
 /**
  * READ-ONLY FUNCTION FETCHERS
  */
 
-export async function fetchStream(
-  streamId: bigint,
-  network?: StacksNetwork
-): Promise<StreamData | null> {
-  const nw = network || getCurrentNetwork()
-
+export async function fetchStream(streamId: bigint, network: StacksNetwork): Promise<StreamData | null> {
   try {
     const result = await fetchCallReadOnlyFunction({
-      contractAddress: VESPER_CONTRACT_ADDRESS,
-      contractName: VESPER_CONTRACT_NAME,
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
       functionName: 'get-stream',
       functionArgs: [uintCV(streamId)],
-      network: nw,
-      senderAddress: VESPER_CONTRACT_ADDRESS,
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
     })
 
-    // fetchCallReadOnlyFunction returns ClarityValue directly
-    const value = cvToValue(result)
+    const stream = cvToValue(result) as {
+      id: bigint
+      sender: string
+      recipient: string
+      deposit: bigint
+      ratePerBlock: bigint
+      startBlock: bigint
+      stopBlock: bigint
+      totalWithdrawn: bigint
+      memo: string | null
+      paused: boolean
+    }
+    
     return {
-      id: streamId,
-      payer: value.payer || '',
-      recipient: value.recipient || '',
-      totalAmount: BigInt(value['total-amount'] || 0),
-      withdrawn: BigInt(value.withdrawn || 0),
-      startBlock: BigInt(value['start-block'] || 0),
-      endBlock: BigInt(value['end-block'] || 0),
-      ratePerBlock: BigInt(value['rate-per-block'] || 0),
-      status: value.status || 'active',
-      escrowModel: value['escrow-model'] || 'standard',
-      createdAt: BigInt(value['created-at'] || 0),
-    } as StreamData
-  } catch (error) {
-    console.error(`Error fetching stream ${streamId}:`, error)
+      id: stream.id,
+      sender: stream.sender,
+      recipient: stream.recipient,
+      deposit: stream.deposit,
+      ratePerBlock: stream.ratePerBlock,
+      startBlock: stream.startBlock,
+      stopBlock: stream.stopBlock,
+      totalWithdrawn: stream.totalWithdrawn,
+      memo: stream.memo || '',
+      paused: stream.paused,
+    }
+  } catch (err) {
+    console.error('❌ Failed to fetch stream:', err)
     return null
   }
 }
 
-export async function fetchStreamBalance(
-  streamId: bigint,
-  network?: StacksNetwork
-): Promise<bigint> {
-  const nw = network || getCurrentNetwork()
-
+export async function fetchStreamBalance(streamId: bigint, network: StacksNetwork): Promise<bigint> {
   try {
     const result = await fetchCallReadOnlyFunction({
-      contractAddress: VESPER_CONTRACT_ADDRESS,
-      contractName: VESPER_CONTRACT_NAME,
-      functionName: 'get-available-balance',
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
+      functionName: 'get-stream-balance',
       functionArgs: [uintCV(streamId)],
-      network: nw,
-      senderAddress: VESPER_CONTRACT_ADDRESS,
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
     })
 
-    const value = cvToValue(result)
-    return BigInt(value || 0)
-  } catch (error) {
-    console.error(`Error fetching stream balance for ${streamId}:`, error)
+    const balance = cvToValue(result) as bigint
+    return balance
+  } catch (err) {
+    console.error('❌ Failed to fetch stream balance:', err)
     return 0n
   }
 }
 
-export async function fetchSenderStreams(
-  sender: string,
-  network?: StacksNetwork
-): Promise<bigint[]> {
-  const nw = network || getCurrentNetwork()
-
+export async function fetchSenderStreams(sender: string, network: StacksNetwork): Promise<bigint[]> {
   try {
     const result = await fetchCallReadOnlyFunction({
-      contractAddress: VESPER_CONTRACT_ADDRESS,
-      contractName: VESPER_CONTRACT_NAME,
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
       functionName: 'get-sender-streams',
       functionArgs: [principalCV(sender)],
-      network: nw,
-      senderAddress: VESPER_CONTRACT_ADDRESS,
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
     })
 
-    const value = cvToValue(result) as any[]
-    return value?.map(v => BigInt(v)) || []
-  } catch (error) {
-    console.error(`Error fetching sender streams for ${sender}:`, error)
+    const streams = cvToValue(result) as bigint[]
+    return streams
+  } catch (err) {
+    console.error('❌ Failed to fetch sender streams:', err)
     return []
   }
 }
 
-export async function fetchRecipientStreams(
-  recipient: string,
-  network?: StacksNetwork
-): Promise<bigint[]> {
-  const nw = network || getCurrentNetwork()
-
+export async function fetchRecipientStreams(recipient: string, network: StacksNetwork): Promise<bigint[]> {
   try {
     const result = await fetchCallReadOnlyFunction({
-      contractAddress: VESPER_CONTRACT_ADDRESS,
-      contractName: VESPER_CONTRACT_NAME,
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
       functionName: 'get-recipient-streams',
       functionArgs: [principalCV(recipient)],
-      network: nw,
-      senderAddress: VESPER_CONTRACT_ADDRESS,
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
     })
 
-    const value = cvToValue(result) as any[]
-    return value?.map(v => BigInt(v)) || []
-  } catch (error) {
-    console.error(`Error fetching recipient streams for ${recipient}:`, error)
+    const streams = cvToValue(result) as bigint[]
+    return streams
+  } catch (err) {
+    console.error('❌ Failed to fetch recipient streams:', err)
     return []
   }
 }
 
-export async function fetchTotalStreams(network?: StacksNetwork): Promise<bigint> {
-  const nw = network || getCurrentNetwork()
-
+export async function fetchTotalStreams(network: StacksNetwork): Promise<bigint> {
   try {
     const result = await fetchCallReadOnlyFunction({
-      contractAddress: VESPER_CONTRACT_ADDRESS,
-      contractName: VESPER_CONTRACT_NAME,
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
       functionName: 'get-total-streams',
       functionArgs: [],
-      network: nw,
-      senderAddress: VESPER_CONTRACT_ADDRESS,
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
     })
 
-    const value = cvToValue(result)
-    return BigInt(value || 0)
-  } catch (error) {
-    console.error('Error fetching total streams:', error)
+    const total = cvToValue(result) as bigint
+    return total
+  } catch (err) {
+    console.error('❌ Failed to fetch total streams:', err)
     return 0n
   }
 }
 
-export async function fetchStreamProgress(
-  streamId: bigint,
-  network?: StacksNetwork
-): Promise<StreamProgress> {
-  const stream = await fetchStream(streamId, network)
+export async function fetchStreamProgress(streamId: bigint, network: StacksNetwork): Promise<StreamProgress | null> {
+  try {
+    const result = await fetchCallReadOnlyFunction({
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
+      functionName: 'get-stream-progress',
+      functionArgs: [uintCV(streamId)],
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
+    })
 
-  if (!stream) {
-    return {
-      streamId,
-      totalAmount: 0n,
-      accruedAmount: 0n,
-      claimableAmount: 0n,
-      percentComplete: 0,
+    const progress = cvToValue(result) as {
+      totalBlocks: bigint
+      blocksElapsed: bigint
+      streamed: bigint
+      withdrawn: bigint
+      claimable: bigint
+      currentBlock: bigint
+      percentComplete: bigint
     }
+    
+    return {
+      totalBlocks: progress.totalBlocks,
+      blocksElapsed: progress.blocksElapsed,
+      streamed: progress.streamed,
+      withdrawn: progress.withdrawn,
+      claimable: progress.claimable,
+      currentBlock: progress.currentBlock,
+      percentComplete: Number(progress.percentComplete),
+    }
+  } catch (err) {
+    console.error('❌ Failed to fetch stream progress:', err)
+    return null
   }
+}
 
-  const nw = network || getCurrentNetwork()
-  const claimable = await fetchStreamBalance(streamId, nw)
+export async function fetchContractBalance(network: StacksNetwork): Promise<bigint> {
+  try {
+    const result = await fetchCallReadOnlyFunction({
+      contractAddress: CONTRACT_CONFIG.vesperCore.address,
+      contractName: CONTRACT_CONFIG.vesperCore.name,
+      functionName: 'get-contract-balance',
+      functionArgs: [],
+      senderAddress: CONTRACT_CONFIG.vesperCore.address,
+      network,
+    })
 
-  // Calculate accrued based on blocks elapsed (simplified - actual implementation
-  // should call get-stream-balance or similar contract function)
-  const accruedAmount = stream.totalAmount - stream.withdrawn
-  const percentComplete =
-    stream.totalAmount > 0n ? Number((accruedAmount * 100n) / stream.totalAmount) : 0
-
-  return {
-    streamId,
-    totalAmount: stream.totalAmount,
-    accruedAmount,
-    claimableAmount: claimable,
-    percentComplete,
+    const balance = cvToValue(result) as bigint
+    return balance
+  } catch (err) {
+    console.error('❌ Failed to fetch contract balance:', err)
+    return 0n
   }
 }

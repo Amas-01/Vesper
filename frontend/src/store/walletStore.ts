@@ -1,24 +1,31 @@
-// Zustand store for wallet state
-// TODO: Implement wallet store with persistence
-
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { WalletState } from '../types/wallet'
 
-interface WalletStore {
-  address: string | null
-  isConnected: boolean
-  network: string
-  setAddress: (address: string | null) => void
-  setConnected: (connected: boolean) => void
-  setNetwork: (network: string) => void
+interface WalletStoreState extends WalletState {
+  connect: (address: string, network: 'mainnet' | 'testnet') => void
   disconnect: () => void
+  setAddress: (address: string | null) => void
+  setNetwork: (network: 'mainnet' | 'testnet') => void
 }
 
-export const useWalletStore = create<WalletStore>((set) => ({
-  address: null,
-  isConnected: false,
-  network: 'testnet',
-  setAddress: (address) => set({ address }),
-  setConnected: (connected) => set({ isConnected: connected }),
-  setNetwork: (network) => set({ network }),
-  disconnect: () => set({ address: null, isConnected: false }),
-}))
+export const useWalletStore = create<WalletStoreState>()(
+  persist(
+    (set) => ({
+      address: null,
+      isConnected: false,
+      network: 'mainnet',
+      connect: (address, network) => set({ address, isConnected: true, network }),
+      disconnect: () => set({ address: null, isConnected: false }),
+      setAddress: (address) => set({ address, isConnected: !!address }),
+      setNetwork: (network) => set({ network }),
+    }),
+    {
+      name: 'vesper-wallet-store',
+      partialize: (state) => ({
+        address: state.address,
+        network: state.network,
+      }),
+    }
+  )
+)

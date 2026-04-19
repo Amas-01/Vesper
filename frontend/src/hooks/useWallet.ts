@@ -21,8 +21,7 @@ export function useWallet() {
       if (userAddress) {
         setAddress(userAddress)
         setIsConnected(true)
-        store.setAddress(userAddress)
-        store.setConnected(true)
+        store.connect(userAddress, 'mainnet')
       }
     }
   }, [])
@@ -44,8 +43,7 @@ export function useWallet() {
           if (userAddress) {
             setAddress(userAddress)
             setIsConnected(true)
-            store.setAddress(userAddress)
-            store.setConnected(true)
+            store.connect(userAddress, 'mainnet')
           }
           setIsLoading(false)
         },
@@ -64,8 +62,7 @@ export function useWallet() {
     userSession.signUserOut()
     setAddress(null)
     setIsConnected(false)
-    store.setAddress(null)
-    store.setConnected(false)
+    store.disconnect()
   }
 
   return {
