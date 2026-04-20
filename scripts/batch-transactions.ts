@@ -621,8 +621,58 @@ async function executeBatch(
 }
 
 // ============================================================================
-// MAIN EXECUTION
+// MAIN EXECUTION ORCHESTRATION
 // ============================================================================
+
+async function runDailyBatch(): Promise<void> {
+  const startTime = Date.now();
+  const txLog: TransactionLog[] = [];
+
+  console.log('\n╔════════════════════════════════════════════════════════════════╗');
+  console.log('║        Vesper Daily Batch v1 - Full Execution                  ║');
+  console.log('╚════════════════════════════════════════════════════════════════╝');
+
+  try {
+    // Step 1: Validate and initialize
+    validateConfig();
+    const wallets = generateWallets(5);
+    await fundWalletsFromFaucet(wallets);
+
+    // Step 2: Execute batch transactions
+    const batchResult = await executeBatch(wallets, txLog);
+    console.log(`\n[Report] Batch execution: ${batchResult.successful}/${batchResult.successful + batchResult.failed} successful`);
+
+    // Small delay before sweep
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Step 3: Execute sweep-back
+    const sweepResult = await executeSweepBack(wallets, txLog);
+
+    // Step 4: Create batch result and save
+    const durationMs = Date.now() - startTime;
+    const result: BatchResult = {
+      date: new Date().toISOString().split('T')[0],
+      network: VITE_NETWORK,
+      transactions: txLog,
+      sweepSummary: {
+        totalRecovered: sweepResult.totalRecovered,
+        totalGasSpent: sweepResult.totalGasSpent,
+        netCost: sweepResult.netCost,
+      },
+      durationMs,
+    };
+
+    // Save and print summary
+    saveBatchLog(result);
+    printSummary(result);
+
+    console.log(`\n✓ Daily batch execution completed successfully in ${(durationMs / 1000).toFixed(1)}s`);
+    process.exit(0);
+  } catch (error) {
+    console.error('\n✗ Daily batch execution failed:', error);
+    process.exit(1);
+  }
+}
 
 async function initializeBatch(): Promise<WalletConfig[]> {
   console.log('\n╔════════════════════════════════════════════════════════════════╗');
@@ -649,16 +699,10 @@ async function initializeBatch(): Promise<WalletConfig[]> {
 // ============================================================================
 
 if (require.main === module) {
-  initializeBatch()
-    .then((wallets) => {
-      console.log('\n✓ Wallets ready for batch execution');
-      console.log(`  Total wallets: ${wallets.length}`);
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('\n✗ Batch initialization failed:', error);
-      process.exit(1);
-    });
+  runDailyBatch().catch((error) => {
+    console.error('\n✗ Fatal error:', error);
+    process.exit(1);
+  });
 }
 
 // ============================================================================
@@ -682,6 +726,7 @@ export {
   calculateNetCost,
   executeSweepBack,
   initializeBatch,
+  runDailyBatch,
   DEPLOYER_ADDRESS,
   DEPLOYER_PRIVATE_KEY,
   CONTRACT_ADDRESS,
