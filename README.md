@@ -20,7 +20,7 @@ Vesper is a decentralized payment streaming protocol built on Stacks that enable
 
 ## 📊 Phase 1 Implementation Status
 
-### ✅ Completed Tasks (Tasks 1.1 - 1.8)
+### ✅ Completed Tasks (Tasks 1.1 - 1.14)
 
 | Task | Feature | Status | Details |
 |------|---------|--------|---------|
@@ -29,12 +29,43 @@ Vesper is a decentralized payment streaming protocol built on Stacks that enable
 | **1.6** | Frontend Scaffold | ✅ Complete | Vite 5, React 18, TypeScript, Tailwind CSS |
 | **1.7** | Wallet Integration | ✅ Complete | @stacks/connect with Hiro Wallet support |
 | **1.8** | Contract Builders & UI | ✅ Complete | 11 contract functions + dark mode system (20+ components) |
+| **1.9-1.12** | Frontend Pages | ✅ Complete | Create stream, dashboard, detail, GitHub CI/CD |
+| **1.13-1.14** | Feature Branch Sync | ✅ Complete | All features synced to main with latest CI/CD |
 
-### 🔄 In Progress (Tasks 1.9 - 1.12)
-- **1.9** CreateStream form with validation
-- **1.10** Dashboard with stream management
-- **1.11** Stream detail page with progress tracking
-- **1.12** GitHub Actions CI/CD pipeline
+### 🚀 Phase 1.15 - Daily Batch Automation (✅ Complete)
+
+**Daily Batch Transaction Script v1** (5 commits)
+- ✅ Wallet generation & testnet faucet funding
+- ✅ 14-step batch transaction execution (create/withdraw/topup/cancel)
+- ✅ Automatic sweep-back fund recovery with gas cost tracking
+- ✅ JSON logging with daily batch summaries
+- ✅ npm scripts: `npm run batch` (mainnet), `npm run batch:testnet` (testnet)
+
+### 🔄 Phase 1.16 - GitHub Actions Automation (✅ Complete)
+
+**Daily Batch Automation Workflow** (4 commits)
+- ✅ Cron-scheduled daily execution at 2 AM UTC on testnet
+- ✅ Manual dispatch support for ad-hoc testing (mainnet/testnet)
+- ✅ Batch monitoring workflow with log parsing and reporting
+- ✅ Complete secrets setup documentation ([SECRETS_SETUP.md](docs/SECRETS_SETUP.md))
+- ✅ Daily automation operations runbook ([DAILY_AUTOMATION.md](docs/DAILY_AUTOMATION.md))
+
+### 🔴 Phase 1.17 - Testnet Deployment (IN PROGRESS)
+
+**Deploy Phase 1 to Testnet** (3 commits)
+- ✅ Testnet deployment script with validation checks
+- ✅ Batch verification script for contract testing
+- ⏳ **This commit**: Update README and deployment documentation
+
+**Testnet Resources**:
+- 📖 [Testnet Deployment Guide](docs/TESTNET_DEPLOYMENT.md) - Step-by-step deployment
+- 🔑 [Secrets Setup Guide](docs/SECRETS_SETUP.md) - GitHub Actions secrets configuration
+- 📋 [Daily Automation Runbook](docs/DAILY_AUTOMATION.md) - Operations and troubleshooting
+
+**Next Phase**: After testnet verification
+- Phase 2: Mainnet contract deployment
+- Phase 3: Production frontend deployment to Vercel
+- Phase 4: Mainnet monitoring and alerting
 
 ## ⚡ Quick Start
 
@@ -54,18 +85,26 @@ cd Vesper
 npm install
 
 # Run smart contract tests
-cd contracts && clarinet test
+npm run test
 
 # Start development frontend
 cd frontend && npm run dev
 
 # Build for production
 npm run build
+
+# Run daily batch script locally (testnet)
+npm run batch:testnet
+
+# Check batch logs
+cat scripts/logs/batch-$(date +%Y-%m-%d).json | jq
 ```
 
 ### Deploy to Testnet
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed testnet and mainnet deployment instructions.
+See [TESTNET_DEPLOYMENT.md](docs/TESTNET_DEPLOYMENT.md) for detailed testnet deployment instructions.
+
+Automated daily batch execution: [DAILY_AUTOMATION.md](docs/DAILY_AUTOMATION.md)
 
 ## 📚 Documentation
 
@@ -75,7 +114,10 @@ See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed testnet and mainnet deploym
 - 📝 [Smart Contracts](docs/CONTRACTS.md) - Contract reference and function signatures
 - ⚛️ [Frontend Components](docs/FRONTEND_COMPONENTS.md) - React component library
 - 🧪 [Testing Strategy](docs/TESTING.md) - Test coverage and execution
-- 🚀 [Deployment Guide](docs/DEPLOYMENT.md) - Testnet and mainnet deployment
+- 🚀 [Testnet Deployment](docs/TESTNET_DEPLOYMENT.md) - Step-by-step testnet deployment guide
+- ⚙️ [Daily Automation](docs/DAILY_AUTOMATION.md) - Daily batch automation operations runbook
+- 🔐 [Secrets Setup](docs/SECRETS_SETUP.md) - GitHub Actions secrets configuration
+- 🌐 [CI/CD Pipeline](docs/CI_CD.md) - GitHub Actions workflows and build optimization
 
 ## Project Structure
 
