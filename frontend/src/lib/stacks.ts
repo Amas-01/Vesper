@@ -19,14 +19,7 @@ export const CONTRACT_CONFIG = {
     address: import.meta.env.VITE_VESPER_CORE_ADDRESS ?? '',
     name: 'vesper-core',
   },
-  vesperDao: {
-    address: import.meta.env.VITE_VESPER_DAO_ADDRESS ?? '',
-    name: 'vesper-dao',
-  },
-  vesperRegistry: {
-    address: import.meta.env.VITE_VESPER_REGISTRY_ADDRESS ?? '',
-    name: 'vesper-registry',
-  },
+  // Future contracts (vesper-dao, vesper-registry) to be deployed in Phase 2
 }
 
 export const EXPLORER_BASE = import.meta.env.VITE_NETWORK === 'testnet'
