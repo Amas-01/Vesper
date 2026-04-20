@@ -290,7 +290,48 @@ function printSummary(result: BatchResult): void {
 }
 
 // ============================================================================
-// MAIN EXPORT
+// MAIN EXECUTION
+// ============================================================================
+
+async function initializeBatch(): Promise<WalletConfig[]> {
+  console.log('\n╔════════════════════════════════════════════════════════════════╗');
+  console.log('║       Vesper Daily Batch - Wallet Setup & Funding              ║');
+  console.log('╚════════════════════════════════════════════════════════════════╝');
+
+  // Validate environment
+  validateConfig();
+
+  // Step 1: Generate fresh wallets
+  const wallets = generateWallets(5);
+
+  // Step 2: Fund wallets from faucet (testnet) or deployer (mainnet)
+  await fundWalletsFromFaucet(wallets);
+
+  console.log(`\n✓ Batch initialization complete`);
+  console.log(`  Ready to execute stream transactions with ${wallets.length} funded wallets`);
+
+  return wallets;
+}
+
+// ============================================================================
+// CLI ENTRY POINT
+// ============================================================================
+
+if (require.main === module) {
+  initializeBatch()
+    .then((wallets) => {
+      console.log('\n✓ Wallets ready for batch execution');
+      console.log(`  Total wallets: ${wallets.length}`);
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('\n✗ Batch initialization failed:', error);
+      process.exit(1);
+    });
+}
+
+// ============================================================================
+// EXPORTS
 // ============================================================================
 
 export {
@@ -304,6 +345,7 @@ export {
   logTransaction,
   saveBatchLog,
   printSummary,
+  initializeBatch,
   DEPLOYER_ADDRESS,
   DEPLOYER_PRIVATE_KEY,
   CONTRACT_ADDRESS,
