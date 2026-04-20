@@ -207,17 +207,21 @@
   (escrow-model (string-ascii 20))
 )
   (let (
-    ;; Validate all inputs in let binding before use
-    (_ (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED))
-    (_ (asserts! (not (is-eq recipient CONTRACT-OWNER)) ERR-NOT-AUTHORIZED))
-    (_ (asserts! (> total-amount u0) ERR-INVALID-AMOUNT))
-    (_ (asserts! (< start-block end-block) ERR-INVALID-RATE))
-    (_ (asserts! (>= (- end-block start-block) MIN-STREAM-DURATION) ERR-INVALID-RATE))
-    (_ (asserts! (<= (- end-block start-block) MAX-STREAM-DURATION) ERR-INVALID-RATE))
     (stream-id (var-get stream-counter))
     (duration (- end-block start-block))
     (rate-per-block (/ total-amount duration))
   )
+    ;; Verify protocol is enabled
+    (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED)
+    ;; Verify recipient is not contract owner
+    (asserts! (not (is-eq recipient CONTRACT-OWNER)) ERR-NOT-AUTHORIZED)
+    ;; Verify amount is positive
+    (asserts! (> total-amount u0) ERR-INVALID-AMOUNT)
+    ;; Verify start block is less than end block
+    (asserts! (< start-block end-block) ERR-INVALID-RATE)
+    ;; Check stream duration is within limits
+    (asserts! (>= duration MIN-STREAM-DURATION) ERR-INVALID-RATE)
+    (asserts! (<= duration MAX-STREAM-DURATION) ERR-INVALID-RATE)
     ;; Verify sender has sufficient escrow balance
     (asserts! (>= (get-user-balance tx-sender) total-amount) ERR-INSUFFICIENT-BALANCE)
     ;; Deduct from payer's escrow
