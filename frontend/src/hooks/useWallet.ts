@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { showConnect } from '@stacks/connect'
 import { AppConfig, UserSession } from '@stacks/auth'
 import { useWalletStore } from '../store/walletStore'
+import { getNetworkName } from '../lib/stacks'
 
 const appConfig = new AppConfig(['store_write', 'publish_data'])
 export const userSession = new UserSession({ appConfig })
@@ -12,16 +13,22 @@ export function useWallet() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const store = useWalletStore()
+  const networkName = getNetworkName()
+  const networkKey = networkName as 'mainnet' | 'testnet'
 
   useEffect(() => {
     // Check if user is already logged in
     if (userSession.isUserSignedIn()) {
       const userData = userSession.loadUserData()
-      const userAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet
+      // Prioritize the configured network, fallback to the other
+      const userAddress = networkKey === 'testnet'
+        ? userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet
+        : userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet
+      
       if (userAddress) {
         setAddress(userAddress)
         setIsConnected(true)
-        store.connect(userAddress, 'mainnet')
+        store.connect(userAddress, networkKey)
       }
     }
   }, [])
@@ -39,11 +46,15 @@ export function useWallet() {
         userSession,
         onFinish: () => {
           const userData = userSession.loadUserData()
-          const userAddress = userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet
+          // Prioritize the configured network, fallback to the other
+          const userAddress = networkKey === 'testnet'
+            ? userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet
+            : userData?.profile?.stxAddress?.mainnet || userData?.profile?.stxAddress?.testnet
+          
           if (userAddress) {
             setAddress(userAddress)
             setIsConnected(true)
-            store.connect(userAddress, 'mainnet')
+            store.connect(userAddress, networkKey)
           }
           setIsLoading(false)
         },
