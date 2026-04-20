@@ -12,9 +12,9 @@
     "format:check": "cd frontend && npm run format:check 2>/dev/null || echo 'No format check in frontend'",
     "build": "cd frontend && npm run build",
     "build:testnet": "cd frontend && VITE_NETWORK=testnet npm run build",
-    "batch": "VITE_NETWORK=mainnet ts-node scripts/batch-transactions.ts",
-    "batch:testnet": "VITE_NETWORK=testnet ts-node scripts/batch-transactions.ts",
-    "batch:dry-run": "echo '[DRY RUN] Batch script would execute with testnet config' && VITE_NETWORK=testnet ts-node scripts/batch-transactions.ts --dry-run"
+    "batch": "VITE_NETWORK=mainnet npx tsx scripts/batch-transactions.ts",
+    "batch:testnet": "VITE_NETWORK=testnet npx tsx scripts/batch-transactions.ts",
+    "batch:dry-run": "echo '[DRY RUN] Batch script would execute with testnet config' && VITE_NETWORK=testnet npx tsx scripts/batch-transactions.ts --dry-run"
   },
   "author": "",
   "license": "ISC",
@@ -24,7 +24,9 @@
     "@stacks/transactions": "^7.2.0",
     "@stacks/network": "^7.2.0",
     "chokidar-cli": "^3.0.0",
+    "dotenv": "^16.3.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
     "vitest": "^3.2.4",
     "vitest-environment-clarinet": "^2.3.0"
   },
