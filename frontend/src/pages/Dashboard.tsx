@@ -42,6 +42,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchStreams()
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchStreams()
+    }, 30000)
+
+    return () => clearInterval(interval)
   }, [address, isConnected])
 
   if (!isConnected) {
