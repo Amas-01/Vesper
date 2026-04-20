@@ -290,6 +290,220 @@ function printSummary(result: BatchResult): void {
 }
 
 // ============================================================================
+// BATCH EXECUTION LOGIC
+// ============================================================================
+
+/**
+ * Execute batch transaction sequence:
+ * 1-4: Wallet 0→1, 1→2, 2→3, 3→4 create-stream calls
+ * 5-8: Withdrawals from each stream
+ * 9-12: Top-up additions to each stream
+ * 13-14: Cancel first two streams, read rates
+ */
+async function executeBatch(
+  wallets: WalletConfig[],
+  txLog: TransactionLog[]
+): Promise<{ successful: number; failed: number }> {
+  console.log('\n→ Starting batch execution (14-step sequence)...');
+
+  let successCount = 0;
+  let failCount = 0;
+
+  try {
+    // ===== PHASE 1: CREATE STREAMS (4 transactions) =====
+    console.log('\n[Phase 1/4] Creating streams from wallet chain...');
+
+    for (let i = 0; i < 4; i++) {
+      const fromWallet = wallets[i];
+      const toWallet = wallets[i + 1];
+      const streamConfig = BATCH_CONFIG[`stream${i + 1}` as keyof typeof BATCH_CONFIG];
+
+      console.log(`  Step ${i + 1}: ${fromWallet.address.substring(0, 8)}... → ${toWallet.address.substring(0, 8)}...`);
+
+      try {
+        const tx = await makeContractCall({
+          contractAddress: CONTRACT_ADDRESS!,
+          contractName: 'vesper-core',
+          functionName: 'create-stream',
+          functionArgs: [
+            standardPrincipalCV(toWallet.address),
+            uintCV(streamConfig.deposit),
+            uintCV(streamConfig.rate),
+            uintCV(streamConfig.duration),
+          ],
+          senderKey: fromWallet.privateKey,
+          fee: TX_FEE,
+          anchorMode: AnchorMode.Any,
+          network,
+        });
+
+        const txResponse = await broadcastTransaction(tx, network);
+        logTransaction(txLog, txResponse, 'create-stream', fromWallet.address, toWallet.address, streamConfig.deposit);
+        successCount++;
+        console.log(`    ✓ Broadcasting: ${txResponse.substring(0, 16)}...`);
+
+        // Poll for confirmation
+        const confirmation = await waitForConfirmation(txResponse);
+        if (confirmation.confirmed) {
+          txLog[txLog.length - 1].status = 'confirmed';
+        } else {
+          txLog[txLog.length - 1].status = 'failed';
+          failCount++;
+          successCount--;
+        }
+      } catch (error) {
+        console.error(`    ✗ Error: ${error}`);
+        failCount++;
+      }
+
+      // Small delay between transactions
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    // ===== PHASE 2: WITHDRAW FROM STREAMS (4 transactions) =====
+    console.log('\n[Phase 2/4] Withdrawing from streams...');
+
+    for (let i = 0; i < 4; i++) {
+      const wallet = wallets[i + 1]; // Recipient of stream i
+      console.log(`  Step ${5 + i}: Withdraw from stream ${i + 1} (${wallet.address.substring(0, 8)}...)`);
+
+      try {
+        const tx = await makeContractCall({
+          contractAddress: CONTRACT_ADDRESS!,
+          contractName: 'vesper-core',
+          functionName: 'withdraw-from-stream',
+          functionArgs: [
+            standardPrincipalCV(wallets[i].address), // Stream creator
+            uintCV(i), // Stream ID
+            uintCV(100), // Withdraw 100 µSTX
+          ],
+          senderKey: wallet.privateKey,
+          fee: TX_FEE,
+          anchorMode: AnchorMode.Any,
+          network,
+        });
+
+        const txResponse = await broadcastTransaction(tx, network);
+        logTransaction(txLog, txResponse, 'withdraw-from-stream', wallet.address, undefined, 100);
+        successCount++;
+        console.log(`    ✓ Broadcasting: ${txResponse.substring(0, 16)}...`);
+
+        const confirmation = await waitForConfirmation(txResponse);
+        if (confirmation.confirmed) {
+          txLog[txLog.length - 1].status = 'confirmed';
+        } else {
+          txLog[txLog.length - 1].status = 'failed';
+          failCount++;
+          successCount--;
+        }
+      } catch (error) {
+        console.error(`    ✗ Error: ${error}`);
+        failCount++;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    // ===== PHASE 3: TOP-UP STREAMS (4 transactions) =====
+    console.log('\n[Phase 3/4] Adding top-ups to streams...');
+
+    for (let i = 0; i < 4; i++) {
+      const fromWallet = wallets[i];
+      console.log(`  Step ${9 + i}: Top-up stream ${i + 1} from wallet ${i + 1}`);
+
+      try {
+        const tx = await makeContractCall({
+          contractAddress: CONTRACT_ADDRESS!,
+          contractName: 'vesper-core',
+          functionName: 'top-up-stream',
+          functionArgs: [
+            standardPrincipalCV(wallets[i + 1].address), // Stream recipient
+            uintCV(i), // Stream ID
+            uintCV(BATCH_CONFIG.topUpAmount), // Top-up amount
+          ],
+          senderKey: fromWallet.privateKey,
+          fee: TX_FEE,
+          anchorMode: AnchorMode.Any,
+          network,
+        });
+
+        const txResponse = await broadcastTransaction(tx, network);
+        logTransaction(txLog, txResponse, 'top-up-stream', fromWallet.address, undefined, BATCH_CONFIG.topUpAmount);
+        successCount++;
+        console.log(`    ✓ Broadcasting: ${txResponse.substring(0, 16)}...`);
+
+        const confirmation = await waitForConfirmation(txResponse);
+        if (confirmation.confirmed) {
+          txLog[txLog.length - 1].status = 'confirmed';
+        } else {
+          txLog[txLog.length - 1].status = 'failed';
+          failCount++;
+          successCount--;
+        }
+      } catch (error) {
+        console.error(`    ✗ Error: ${error}`);
+        failCount++;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    // ===== PHASE 4: CANCEL STREAMS & READ (4 transactions) =====
+    console.log('\n[Phase 4/4] Canceling and reading stream data...');
+
+    // Cancel first 2 streams
+    for (let i = 0; i < 2; i++) {
+      const fromWallet = wallets[i];
+      console.log(`  Step ${13 + i}: Cancel stream ${i + 1}`);
+
+      try {
+        const tx = await makeContractCall({
+          contractAddress: CONTRACT_ADDRESS!,
+          contractName: 'vesper-core',
+          functionName: 'cancel-stream',
+          functionArgs: [
+            standardPrincipalCV(wallets[i + 1].address), // Stream recipient
+            uintCV(i), // Stream ID
+          ],
+          senderKey: fromWallet.privateKey,
+          fee: TX_FEE,
+          anchorMode: AnchorMode.Any,
+          network,
+        });
+
+        const txResponse = await broadcastTransaction(tx, network);
+        logTransaction(txLog, txResponse, 'cancel-stream', fromWallet.address);
+        successCount++;
+        console.log(`    ✓ Broadcasting: ${txResponse.substring(0, 16)}...`);
+
+        const confirmation = await waitForConfirmation(txResponse);
+        if (confirmation.confirmed) {
+          txLog[txLog.length - 1].status = 'confirmed';
+        } else {
+          txLog[txLog.length - 1].status = 'failed';
+          failCount++;
+          successCount--;
+        }
+      } catch (error) {
+        console.error(`    ✗ Error: ${error}`);
+        failCount++;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    console.log(`\n✓ Batch execution complete`);
+    console.log(`  Successful transactions: ${successCount}`);
+    console.log(`  Failed transactions: ${failCount}`);
+
+    return { successful: successCount, failed: failCount };
+  } catch (error) {
+    console.error('\n✗ Batch execution failed:', error);
+    return { successful: successCount, failed: failCount };
+  }
+}
+
+// ============================================================================
 // MAIN EXECUTION
 // ============================================================================
 
@@ -345,6 +559,7 @@ export {
   logTransaction,
   saveBatchLog,
   printSummary,
+  executeBatch,
   initializeBatch,
   DEPLOYER_ADDRESS,
   DEPLOYER_PRIVATE_KEY,
