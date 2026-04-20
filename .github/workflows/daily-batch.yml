@@ -1,0 +1,96 @@
+name: Daily Batch Automation
+
+on:
+  schedule:
+    # Run every day at 2 AM UTC (10 AM UTC-8 / 9 AM UTC-7)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Network to run batch on'
+        required: true
+        default: 'testnet'
+        type: choice
+        options:
+          - mainnet
+          - testnet
+
+jobs:
+  daily-batch:
+    name: Execute Daily Batch Transactions
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    env:
+      NODE_ENV: production
+      VITE_NETWORK: ${{ github.event.inputs.network || 'mainnet' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install --production=false
+        working-directory: .
+
+      - name: Validate batch script
+        run: npm run batch:testnet --dry-run || true
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY_TESTNET }}
+          DEPLOYER_ADDRESS: ${{ secrets.DEPLOYER_ADDRESS }}
+          VESPER_CORE_ADDRESS: ${{ secrets.VESPER_CORE_ADDRESS_TESTNET }}
+
+      - name: Execute batch on testnet
+        id: batch-testnet
+        run: npm run batch:testnet
+        timeout-minutes: 30
+        if: github.event.inputs.network == 'testnet' || github.event_name == 'schedule'
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY_TESTNET }}
+          DEPLOYER_ADDRESS: ${{ secrets.DEPLOYER_ADDRESS }}
+          VESPER_CORE_ADDRESS: ${{ secrets.VESPER_CORE_ADDRESS_TESTNET }}
+
+      - name: Execute batch on mainnet
+        id: batch-mainnet
+        run: npm run batch
+        timeout-minutes: 30
+        if: github.event.inputs.network == 'mainnet'
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          DEPLOYER_ADDRESS: ${{ secrets.DEPLOYER_ADDRESS }}
+          VESPER_CORE_ADDRESS: ${{ secrets.VESPER_CORE_ADDRESS }}
+
+      - name: Upload batch logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-logs-${{ github.run_id }}
+          path: scripts/logs/
+          retention-days: 30
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✓ Batch execution completed successfully"
+          echo "  Network: ${{ env.VITE_NETWORK }}"
+          echo "  Run ID: ${{ github.run_id }}"
+          echo "  Logs: Available in artifacts"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "✗ Batch execution failed"
+          echo "  Network: ${{ env.VITE_NETWORK }}"
+          echo "  Run ID: ${{ github.run_id }}"
+          exit 1

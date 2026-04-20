@@ -1,0 +1,93 @@
+name: Batch Execution Monitoring
+
+on:
+  workflow_run:
+    workflows: [Daily Batch Automation]
+    types: [completed, requested]
+
+jobs:
+  monitor-batch:
+    name: Monitor Batch Execution
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'skipped'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download batch logs
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          path: batch-output
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Parse and summarize batch logs
+        id: summary
+        run: |
+          echo "## Batch Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "batch-output" ] && [ "$(ls -A batch-output)" ]; then
+            echo "### Batch Log Files Found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            for logfile in batch-output/batch-logs-*/batch-*.json; do
+              if [ -f "$logfile" ]; then
+                echo "#### $(basename "$logfile")" >> $GITHUB_STEP_SUMMARY
+                echo "" >> $GITHUB_STEP_SUMMARY
+                
+                # Extract key metrics from JSON log
+                jq -r '
+                  "- **Date**: \(.date)" +
+                  "\n- **Network**: \(.network)" +
+                  "\n- **Total Transactions**: \(.transactions | length)" +
+                  "\n- **Successful**: \([.transactions[] | select(.status == "confirmed")] | length)" +
+                  "\n- **Failed**: \([.transactions[] | select(.status == "failed")] | length)" +
+                  "\n- **Total Gas Spent**: \(.sweepSummary.totalGasSpent) μSTX" +
+                  "\n- **Funds Recovered**: \(.sweepSummary.totalRecovered) μSTX" +
+                  "\n- **Net Daily Cost**: \(.sweepSummary.netCost) μSTX" +
+                  "\n- **Duration**: \(.durationMs / 1000 | . / 1 | floor)s"
+                ' "$logfile" >> $GITHUB_STEP_SUMMARY
+                
+                echo "" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          else
+            echo "⚠️ No batch logs found in artifacts" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check execution status
+        id: status
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ **Status**: Batch executed successfully" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ github.event.workflow_run.conclusion }}" = "failure" ]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "❌ **Status**: Batch execution failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "status=unknown" >> $GITHUB_OUTPUT
+            echo "⚠️ **Status**: Unknown conclusion - ${{ github.event.workflow_run.conclusion }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Notify on success
+        if: steps.status.outputs.status == 'success'
+        run: |
+          echo ""
+          echo "✓ Batch monitoring complete"
+          echo "  Workflow Run ID: ${{ github.event.workflow_run.id }}"
+          echo "  Conclusion: ${{ github.event.workflow_run.conclusion }}"
+
+      - name: Notify on failure
+        if: steps.status.outputs.status == 'failure'
+        run: |
+          echo ""
+          echo "✗ Batch execution issues detected"
+          echo "  Workflow Run ID: ${{ github.event.workflow_run.id }}"
+          echo "  Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "  Review logs in GitHub Actions"
