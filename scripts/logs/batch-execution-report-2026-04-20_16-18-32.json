@@ -1,0 +1,49 @@
+{
+  "execution": {
+    "timestamp": "",
+    "network": "testnet",
+    "deployer": "ST2DZ6FXXVR5DJHCR6Z7J71F3ZG00ATF2AFNQAPMD",
+    "contract": "ST2DZ6FXXVR5DJHCR6Z7J71F3ZG00ATF2AFNQAPMD.vesper-core",
+    "status": "in-progress"
+  },
+  "contract_tests": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "tests": []
+  },
+  "batch_execution": {
+    "phases": {
+      "phase_1_create_streams": {
+        "status": "pending",
+        "transactions": []
+      },
+      "phase_2_withdrawals": {
+        "status": "pending",
+        "transactions": []
+      },
+      "phase_3_topups": {
+        "status": "pending",
+        "transactions": []
+      },
+      "phase_4_cancellations": {
+        "status": "pending",
+        "transactions": []
+      }
+    },
+    "total_transactions": 0,
+    "successful_transactions": 0,
+    "failed_transactions": 0
+  },
+  "monitoring": {
+    "workflow_runs": [],
+    "artifact_uploads": [],
+    "notifications": []
+  },
+  "fund_sweep": {
+    "recovered": 0,
+    "gas_spent": 0,
+    "net_cost": 0
+  },
+  "summary": {}
+}
