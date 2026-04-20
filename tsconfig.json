@@ -19,8 +19,16 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true,
+    "compilerOptions": {
+      "module": "ESNext"
+    }
+  },
   "include": [
     "node_modules/@hirosystems/clarinet-sdk/vitest-helpers/src",
-    "tests"
+    "tests",
+    "scripts"
   ]
 }

@@ -207,56 +207,48 @@
   (escrow-model (string-ascii 20))
 )
   (let (
+    ;; Validate all inputs in let binding before use
+    (_ (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED))
+    (_ (asserts! (not (is-eq recipient CONTRACT-OWNER)) ERR-NOT-AUTHORIZED))
+    (_ (asserts! (> total-amount u0) ERR-INVALID-AMOUNT))
+    (_ (asserts! (< start-block end-block) ERR-INVALID-RATE))
+    (_ (asserts! (>= (- end-block start-block) MIN-STREAM-DURATION) ERR-INVALID-RATE))
+    (_ (asserts! (<= (- end-block start-block) MAX-STREAM-DURATION) ERR-INVALID-RATE))
     (stream-id (var-get stream-counter))
+    (duration (- end-block start-block))
+    (rate-per-block (/ total-amount duration))
   )
-    ;; Verify protocol is enabled
-    (asserts! (var-get protocol-enabled) ERR-NOT-AUTHORIZED)
-    ;; Verify recipient is not contract owner (sanity check)
-    (asserts! (not (is-eq recipient CONTRACT-OWNER)) ERR-NOT-AUTHORIZED)
-    ;; Verify amount is positive
-    (asserts! (> total-amount u0) ERR-INVALID-AMOUNT)
-    ;; Verify start block is less than end block
-    (asserts! (< start-block end-block) ERR-INVALID-RATE)
-    ;; Check stream duration is within limits
-    (asserts! (>= (- end-block start-block) MIN-STREAM-DURATION) ERR-INVALID-RATE)
-    (asserts! (<= (- end-block start-block) MAX-STREAM-DURATION) ERR-INVALID-RATE)
-    ;; Calculate rate per block
-    (let (
-      (duration (- end-block start-block))
-      (rate-per-block (/ total-amount duration))
+    ;; Verify sender has sufficient escrow balance
+    (asserts! (>= (get-user-balance tx-sender) total-amount) ERR-INSUFFICIENT-BALANCE)
+    ;; Deduct from payer's escrow
+    (map-set user-balances
+      { user: tx-sender }
+      { balance: (- (get-user-balance tx-sender) total-amount) }
     )
-      ;; Verify sender has sufficient escrow balance
-      (asserts! (>= (get-user-balance tx-sender) total-amount) ERR-INSUFFICIENT-BALANCE)
-      ;; Deduct from payer's escrow
-      (map-set user-balances
-        { user: tx-sender }
-        { balance: (- (get-user-balance tx-sender) total-amount) }
-      )
-      ;; Create stream record
-      (map-set streams
-        { id: stream-id }
-        {
-          payer: tx-sender,
-          recipient: recipient,
-          total-amount: total-amount,
-          withdrawn: u0,
-          start-block: start-block,
-          end-block: end-block,
-          rate-per-block: rate-per-block,
-          status: "active",
-          escrow-model: escrow-model,
-          created-at: u1
-        }
-      )
-      ;; Add stream ID to index for enumeration
-      (map-set stream-index
-        { index: stream-id }
-        { stream-id: stream-id }
-      )
-      ;; Update stream counter
-      (var-set stream-counter (+ stream-id u1))
-      (ok stream-id)
+    ;; Create stream record
+    (map-set streams
+      { id: stream-id }
+      {
+        payer: tx-sender,
+        recipient: recipient,
+        total-amount: total-amount,
+        withdrawn: u0,
+        start-block: start-block,
+        end-block: end-block,
+        rate-per-block: rate-per-block,
+        status: "active",
+        escrow-model: escrow-model,
+        created-at: u1
+      }
     )
+    ;; Add stream ID to index for enumeration
+    (map-set stream-index
+      { index: stream-id }
+      { stream-id: stream-id }
+    )
+    ;; Update stream counter
+    (var-set stream-counter (+ stream-id u1))
+    (ok stream-id)
   )
 )
 
@@ -264,6 +256,7 @@
 ;; Recipient withdraws accrued balance from stream
 (define-public (withdraw-stream (stream-id uint))
   (let (
+    ;; Validate stream-id is trusted through assertion before use
     (stream (unwrap! (map-get? streams { id: stream-id }) ERR-STREAM-NOT-FOUND))
   )
     ;; Verify protocol is enabled

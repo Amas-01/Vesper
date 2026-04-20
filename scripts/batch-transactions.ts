@@ -4,6 +4,29 @@
  * with automatic fund sweep-back after execution
  */
 
+// Load environment variables FIRST before any imports
+import dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Determine network and load appropriate .env file
+const networkName = process.env.VITE_NETWORK || 'mainnet';
+const envFile = networkName === 'testnet' ? '.env.testnet' : '.env.mainnet';
+const envPath = path.resolve(__dirname, '..', envFile);
+
+console.log(`[DEBUG] Loading environment from: ${envPath}`);
+console.log(`[DEBUG] Network: ${networkName}`);
+
+const result = dotenv.config({ path: envPath });
+if (result.error && !process.env.DEPLOYER_PRIVATE_KEY) {
+  // If dotenv failed and no env vars, warn but continue (might use system env vars)
+  console.warn(`[WARN] Could not load ${envFile}: ${result.error.message}`);
+}
+
+// Now import other dependencies after dotenv is configured
 import {
   makeContractCall,
   makeSTXTokenTransfer,
@@ -15,10 +38,9 @@ import {
   uintCV,
   stringAsciiCV,
 } from '@stacks/transactions';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import * as path from 'path';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -69,7 +91,7 @@ const VITE_NETWORK = process.env.VITE_NETWORK || 'mainnet';
 
 // Network selection
 const isTestnet = VITE_NETWORK === 'testnet';
-const network = isTestnet ? new StacksTestnet() : new StacksMainnet();
+const network = isTestnet ? STACKS_TESTNET : STACKS_MAINNET;
 
 // Faucet URL for testnet funding
 const TESTNET_FAUCET_URL = 'https://api.testnet.hiro.so/extended/v1/faucets/stx';
@@ -96,14 +118,20 @@ const BATCH_CONFIG = {
 // ============================================================================
 
 function validateConfig(): void {
+  console.log('\n[INFO] Validating configuration...');
+  console.log(`  VITE_NETWORK=${process.env.VITE_NETWORK || 'not set'}`);
+  console.log(`  DEPLOYER_ADDRESS=${process.env.DEPLOYER_ADDRESS ? 'SET' : 'NOT SET'}`);
+  console.log(`  DEPLOYER_PRIVATE_KEY=${process.env.DEPLOYER_PRIVATE_KEY ? 'SET' : 'NOT SET'}`);
+  console.log(`  VESPER_CORE_ADDRESS=${process.env.VESPER_CORE_ADDRESS ? 'SET' : 'NOT SET'}`);
+
   if (!DEPLOYER_PRIVATE_KEY) {
-    throw new Error('DEPLOYER_PRIVATE_KEY environment variable not set');
+    throw new Error('DEPLOYER_PRIVATE_KEY environment variable not set. Please set it in .env.testnet or pass via environment.');
   }
   if (!DEPLOYER_ADDRESS) {
-    throw new Error('DEPLOYER_ADDRESS environment variable not set');
+    throw new Error('DEPLOYER_ADDRESS environment variable not set. Please set it in .env.testnet or pass via environment.');
   }
   if (!CONTRACT_ADDRESS) {
-    throw new Error('VESPER_CORE_ADDRESS environment variable not set');
+    throw new Error('VESPER_CORE_ADDRESS environment variable not set. Please set it in .env.testnet or pass via environment.');
   }
   console.log(`✓ Configuration validated`);
   console.log(`  Network: ${VITE_NETWORK}`);
@@ -125,7 +153,9 @@ function generateWallets(count: number): WalletConfig[] {
   for (let i = 0; i < count; i++) {
     // Generate random 32-byte private key
     const privateKey = crypto.randomBytes(32).toString('hex');
-    const address = getAddressFromPrivateKey(privateKey, isTestnet ? 26 : 22);
+    // Get address using network name
+    const networkName = isTestnet ? 'testnet' : 'mainnet';
+    const address = getAddressFromPrivateKey(privateKey, networkName);
 
     wallets.push({ address, privateKey });
     console.log(`  Wallet ${i + 1}: ${address}`);
@@ -698,11 +728,24 @@ async function initializeBatch(): Promise<WalletConfig[]> {
 // CLI ENTRY POINT
 // ============================================================================
 
-if (require.main === module) {
-  runDailyBatch().catch((error) => {
-    console.error('\n✗ Fatal error:', error);
-    process.exit(1);
-  });
+// ES Module equivalent of require.main === module
+const isMainModule = process.argv[1] === new URL(import.meta.url).pathname;
+
+if (isMainModule) {
+  (async () => {
+    try {
+      await runDailyBatch();
+      process.exit(0);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('\n✗ Fatal error:', error.message);
+        console.error(error.stack);
+      } else {
+        console.error('\n✗ Fatal error:', String(error));
+      }
+      process.exit(1);
+    }
+  })();
 }
 
 // ============================================================================
