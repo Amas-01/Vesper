@@ -1,0 +1,14 @@
+
+> vesper-contracts-tests@1.0.0 test
+> vitest run
+
+
+ RUN  v3.2.4 /home/stealth_dev/Documents/PROJECTS/STACKS/Vesper
+
+ ✓ tests/vesper-core.test.ts (28 tests) 1018ms
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  16:17:20
+   Duration  4.04s (transform 103ms, setup 92ms, collect 19ms, tests 1.02s, environment 2.36s, prepare 349ms)
+
