@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
+import { useContract } from '../hooks/useContract'
 import StreamCard from '../components/stream/StreamCard'
 import StreamList from '../components/stream/StreamList'
 import Skeleton from '../components/ui/Skeleton'
@@ -9,6 +10,7 @@ import type { StreamData } from '../types/stream'
 
 export default function Dashboard() {
   const { address, isConnected } = useWallet()
+  const { getSenderStreams, getRecipientStreams, getStream } = useContract()
   const [sentStreams, setSentStreams] = useState<StreamData[]>([])
   const [receivedStreams, setReceivedStreams] = useState<StreamData[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -22,15 +24,25 @@ export default function Dashboard() {
     setError(null)
 
     try {
-      // In a real implementation, these would call actual contract read functions
-      // For now, we'll show the structure
       console.log('Fetching streams for:', address)
       
-      // Simulated delay - replace with actual contract calls
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Fetch sender and recipient stream IDs from contract
+      const senderStreamIds = await getSenderStreams(address)
+      const recipientStreamIds = await getRecipientStreams(address)
       
-      setSentStreams([])
-      setReceivedStreams([])
+      console.log('Sender streams:', senderStreamIds)
+      console.log('Recipient streams:', recipientStreamIds)
+      
+      // Fetch full stream data for each stream ID
+      const senderStreamPromises = senderStreamIds.map(id => getStream(id))
+      const recipientStreamPromises = recipientStreamIds.map(id => getStream(id))
+      
+      const senderData = await Promise.all(senderStreamPromises)
+      const recipientData = await Promise.all(recipientStreamPromises)
+      
+      // Filter out null values and convert to Stream type
+      setSentStreams(senderData.filter((s): s is StreamData => s !== null))
+      setReceivedStreams(recipientData.filter((s): s is StreamData => s !== null))
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch streams'
       setError(errorMsg)
@@ -49,7 +61,7 @@ export default function Dashboard() {
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [address, isConnected])
+  }, [address, isConnected, getSenderStreams, getRecipientStreams, getStream])
 
   if (!isConnected) {
     return (
@@ -85,11 +97,15 @@ export default function Dashboard() {
           </div>
           <div className="vesper-card p-4">
             <p className="text-dark-text-secondary text-sm mb-2">Total Sending</p>
-            <p className="text-2xl font-bold text-blue-300">- STX</p>
+            <p className="text-2xl font-bold text-blue-300">
+              {(Number(sentStreams.reduce((sum, s) => sum + (s.deposit - s.totalWithdrawn), 0n)) / 1_000_000).toFixed(2)} STX
+            </p>
           </div>
           <div className="vesper-card p-4">
             <p className="text-dark-text-secondary text-sm mb-2">Claimable</p>
-            <p className="text-2xl font-bold text-green-300">- STX</p>
+            <p className="text-2xl font-bold text-green-300">
+              {(Number(receivedStreams.reduce((sum, s) => sum + (s.deposit - s.totalWithdrawn), 0n)) / 1_000_000).toFixed(2)} STX
+            </p>
           </div>
         </div>
 
