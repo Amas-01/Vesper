@@ -297,3 +297,9 @@ export async function fetchContractBalance(network: StacksNetwork): Promise<bigi
     return 0n
   }
 }
+
+/**
+ * CONTRACT_CONFIG re-export for convenience
+ * All contracts are typed and ready for use
+ */
+export { CONTRACT_CONFIG } from './stacks'
